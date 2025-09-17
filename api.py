@@ -5,23 +5,25 @@ import json
 import os
 from datetime import datetime
 import logging
+import shutil
 
-# Настройка логирования
+# === Настройка логирования ===
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = Flask(__name__)
+# === Инициализация приложения ===
+app = Flask(__name__, template_folder='templates')  # Будем использовать стандартную папку
 CORS(app)
 
-# Конфигурация Yandex Cloud
+# === Конфигурация Yandex Cloud ===
 YANDEX_CLOUD_API_KEY = os.getenv('YANDEX_CLOUD_API_KEY', 'your-api-key-here')
 YANDEX_CLOUD_FOLDER_ID = os.getenv('YANDEX_CLOUD_FOLDER_ID', 'your-folder-id-here')
 YANDEX_CLOUD_MODEL_ID = os.getenv('YANDEX_CLOUD_MODEL_ID', 'yandexgpt')
 
-# URL для Yandex Cloud AI API
-YANDEX_AI_URL = f"https://llm.api.cloud.yandex.net/foundationModels/v1/completion"
+# URL для Yandex Cloud AI API (удалён лишний пробел)
+YANDEX_AI_URL = "https://llm.api.cloud.yandex.net/foundationModels/v1/completion"
 
-# Контекст для AI модели - информация о ресторане
+# === Контекст для AI модели - ресторан "Sakura Sushi" ===
 RESTAURANT_CONTEXT = """
 Ты - AI-консультант ресторана японской кухни "Sakura Sushi" во Владивостоке.
 
@@ -62,17 +64,18 @@ def call_yandex_ai(user_message, conversation_history=None):
             'Authorization': f'Api-Key {YANDEX_CLOUD_API_KEY}',
             'Content-Type': 'application/json'
         }
-        
-        # Формируем промпт с контекстом и историей
+
         system_prompt = RESTAURANT_CONTEXT
-        
+
         if conversation_history:
-            history_text = "\n".join([f"Клиент: {msg['user']}\nКонсультант: {msg['bot']}" 
-                                    for msg in conversation_history[-5:]])  # Последние 5 сообщений
+            history_text = "\n".join([
+                f"Клиент: {msg['user']}\nКонсультант: {msg['bot']}"
+                for msg in conversation_history[-5:]
+            ])
             system_prompt += f"\n\nИстория разговора:\n{history_text}"
-        
+
         system_prompt += f"\n\nКлиент: {user_message}\nКонсультант:"
-        
+
         data = {
             "modelUri": f"gpt://{YANDEX_CLOUD_FOLDER_ID}/{YANDEX_CLOUD_MODEL_ID}",
             "completionOptions": {
@@ -87,73 +90,70 @@ def call_yandex_ai(user_message, conversation_history=None):
                 }
             ]
         }
-        
+
         response = requests.post(YANDEX_AI_URL, headers=headers, json=data, timeout=30)
-        
+
         if response.status_code == 200:
             result = response.json()
-            return result['result']['alternatives'][0]['message']['text']
+            return result['result']['alternatives'][0]['message']['text'].strip()
         else:
             logger.error(f"Yandex AI API error: {response.status_code} - {response.text}")
             return "Извините, произошла техническая ошибка. Попробуйте позже."
-            
+
     except Exception as e:
         logger.error(f"Error calling Yandex AI: {str(e)}")
         return "Извините, произошла техническая ошибка. Попробуйте позже."
 
+
 @app.route('/')
 def index():
-    """Главная страница - отдаем HTML лендинг"""
-    return render_template('lend_version1.html')
+    """Главная страница — отдаём HTML-лендинг"""
+    try:
+        return render_template('lend_version1.html')
+    except Exception as e:
+        logger.error(f"Template not found: {e}")
+        return f"<h1 style='color:red'>Ошибка: не найден шаблон lend_version1.html</h1><p>{str(e)}</p>", 500
+
 
 @app.route('/api/chat', methods=['POST'])
 def chat():
-    """
-    API endpoint для чата с AI
-    """
+    """API endpoint для чата с AI"""
     try:
         data = request.get_json()
         user_message = data.get('message', '').strip()
         conversation_history = data.get('history', [])
-        
+
         if not user_message:
             return jsonify({'error': 'Сообщение не может быть пустым'}), 400
-        
-        # Получаем ответ от AI
+
         ai_response = call_yandex_ai(user_message, conversation_history)
-        
-        # Логируем взаимодействие
-        logger.info(f"User: {user_message}")
-        logger.info(f"AI: {ai_response}")
-        
+        logger.info(f"User: {user_message} → AI: {ai_response}")
+
         return jsonify({
             'response': ai_response,
             'timestamp': datetime.now().isoformat()
         })
-        
+
     except Exception as e:
         logger.error(f"Chat API error: {str(e)}")
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
 
+
 @app.route('/api/order', methods=['POST'])
 def create_order():
-    """
-    API endpoint для создания заказа
-    """
+    """API endpoint для создания заказа"""
     try:
         data = request.get_json()
-        
-        # Валидация данных
+
         required_fields = ['name', 'phone', 'address', 'items']
         for field in required_fields:
             if field not in data or not data[field]:
-                return jsonify({'error': f'Поле {field} обязательно'}), 400
-        
-        # Здесь можно добавить сохранение заказа в базу данных
-        # или отправку уведомлений
-        
+                return jsonify({'error': f'Поле "{field}" обязательно'}), 400
+
+        order_id = f"ORDER_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+
         order_data = {
-            'id': f"ORDER_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+            'id': order_id,
             'customer': {
                 'name': data['name'],
                 'phone': data['phone'],
@@ -168,30 +168,22 @@ def create_order():
             'status': 'new',
             'created_at': datetime.now().isoformat()
         }
-        
-        # Логируем заказ
-        logger.info(f"New order created: {order_data['id']}")
-        
-        # Здесь можно добавить:
-        # - Сохранение в базу данных
-        # - Отправку уведомлений администратору
-        # - Интеграцию с системой доставки
-        
+
+        logger.info(f"✅ Новый заказ создан: {order_id}")
         return jsonify({
             'success': True,
-            'order_id': order_data['id'],
-            'message': 'Заказ успешно создан'
+            'order_id': order_id,
+            'message': 'Заказ успешно оформлен!'
         })
-        
+
     except Exception as e:
         logger.error(f"Order API error: {str(e)}")
         return jsonify({'error': 'Ошибка при создании заказа'}), 500
 
+
 @app.route('/api/menu', methods=['GET'])
 def get_menu():
-    """
-    API endpoint для получения меню
-    """
+    """API endpoint для получения меню"""
     menu_items = [
         {
             'id': 1,
@@ -234,8 +226,8 @@ def get_menu():
             'image': 'https://avatars.mds.yandex.net/i?id=cd6f8c1e01fbca2cc24618523660d7de2baa4230-4393404-images-thumbs&n=13'
         }
     ]
-    
     return jsonify({'menu': menu_items})
+
 
 @app.route('/health')
 def health_check():
@@ -243,23 +235,32 @@ def health_check():
     return jsonify({
         'status': 'healthy',
         'timestamp': datetime.now().isoformat(),
-        'yandex_ai_configured': bool(YANDEX_CLOUD_API_KEY and YANDEX_CLOUD_FOLDER_ID)
+        'yandex_ai_configured': bool(YANDEX_CLOUD_API_KEY and YANDEX_CLOUD_FOLDER_ID),
+        'version': '1.0'
     })
 
+
+# === Запуск приложения (для Render и локального режима) ===
 if __name__ == '__main__':
-    # Создаем папку для шаблонов если её нет
+    # Создаём папку templates, если её нет
     os.makedirs('templates', exist_ok=True)
-    
-    # Копируем HTML файл в папку templates
-    import shutil
+
+    # Копируем lend_version1.html в templates/, если он есть в корне
     if os.path.exists('lend_version1.html'):
-        shutil.copy('lend_version1.html', 'templates/lend_version1.html')
-    
-    # Запускаем сервер
+        try:
+            shutil.copy('lend_version1.html', 'templates/lend_version1.html')
+            logger.info("📄 Шаблон lend_version1.html скопирован в папку templates/")
+        except Exception as e:
+            logger.error(f"❌ Ошибка копирования шаблона: {e}")
+    else:
+        logger.warning("⚠️ Файл lend_version1.html не найден в корне проекта!")
+
+    # Запуск сервера
     port = int(os.getenv('PORT', 5000))
     debug = os.getenv('FLASK_ENV') == 'development'
-    
-    logger.info(f"Starting Flask server on port {port}")
-    logger.info(f"Yandex AI configured: {bool(YANDEX_CLOUD_API_KEY and YANDEX_CLOUD_FOLDER_ID)}")
-    
+
+    logger.info(f"🚀 Сервер запущен на порту {port}")
+    logger.info(f"🔗 Доступно: http://0.0.0.0:{port}")
+    logger.info(f"🔐 Yandex AI настроен: {bool(YANDEX_CLOUD_API_KEY and YANDEX_CLOUD_FOLDER_ID)}")
+
     app.run(host='0.0.0.0', port=port, debug=debug)
