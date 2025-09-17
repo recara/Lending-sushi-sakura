@@ -1,18 +1,20 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS
 import requests
 import json
 import os
 from datetime import datetime
 import logging
-import shutil
 
 # === Настройка логирования ===
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # === Инициализация приложения ===
-app = Flask(__name__, template_folder='templates')  # Будем использовать стандартную папку
+# Указываем, что шаблоны находятся в корневой папке
+app = Flask(__name__, template_folder='.')
+
+# Включаем CORS для всех маршрутов
 CORS(app)
 
 # === Конфигурация Yandex Cloud ===
@@ -20,10 +22,10 @@ YANDEX_CLOUD_API_KEY = os.getenv('YANDEX_CLOUD_API_KEY', 'your-api-key-here')
 YANDEX_CLOUD_FOLDER_ID = os.getenv('YANDEX_CLOUD_FOLDER_ID', 'your-folder-id-here')
 YANDEX_CLOUD_MODEL_ID = os.getenv('YANDEX_CLOUD_MODEL_ID', 'yandexgpt')
 
-# URL для Yandex Cloud AI API (удалён лишний пробел)
+# URL для Yandex Cloud AI API (без лишних пробелов)
 YANDEX_AI_URL = "https://llm.api.cloud.yandex.net/foundationModels/v1/completion"
 
-# === Контекст для AI модели - ресторан "Sakura Sushi" ===
+# === Контекст для AI модели ===
 RESTAURANT_CONTEXT = """
 Ты - AI-консультант ресторана японской кухни "Sakura Sushi" во Владивостоке.
 
@@ -56,9 +58,7 @@ RESTAURANT_CONTEXT = """
 """
 
 def call_yandex_ai(user_message, conversation_history=None):
-    """
-    Вызов AI модели Yandex Cloud
-    """
+    """Вызов AI модели Yandex Cloud"""
     try:
         headers = {
             'Authorization': f'Api-Key {YANDEX_CLOUD_API_KEY}',
@@ -107,12 +107,12 @@ def call_yandex_ai(user_message, conversation_history=None):
 
 @app.route('/')
 def index():
-    """Главная страница — отдаём HTML-лендинг"""
+    """Главная страница — отдаем HTML из корня"""
     try:
         return render_template('lend_version1.html')
     except Exception as e:
         logger.error(f"Template not found: {e}")
-        return f"<h1 style='color:red'>Ошибка: не найден шаблон lend_version1.html</h1><p>{str(e)}</p>", 500
+        return f"<h1 style='color:red'>Ошибка: не найден lend_version1.html</h1><p>{str(e)}</p>", 500
 
 
 @app.route('/api/chat', methods=['POST'])
@@ -240,27 +240,9 @@ def health_check():
     })
 
 
-# === Запуск приложения (для Render и локального режима) ===
+# === Запуск приложения (для Render / VK Cloud) ===
 if __name__ == '__main__':
-    # Создаём папку templates, если её нет
-    os.makedirs('templates', exist_ok=True)
-
-    # Копируем lend_version1.html в templates/, если он есть в корне
-    if os.path.exists('lend_version1.html'):
-        try:
-            shutil.copy('lend_version1.html', 'templates/lend_version1.html')
-            logger.info("📄 Шаблон lend_version1.html скопирован в папку templates/")
-        except Exception as e:
-            logger.error(f"❌ Ошибка копирования шаблона: {e}")
-    else:
-        logger.warning("⚠️ Файл lend_version1.html не найден в корне проекта!")
-
-    # Запуск сервера
     port = int(os.getenv('PORT', 5000))
     debug = os.getenv('FLASK_ENV') == 'development'
-
     logger.info(f"🚀 Сервер запущен на порту {port}")
-    logger.info(f"🔗 Доступно: http://0.0.0.0:{port}")
-    logger.info(f"🔐 Yandex AI настроен: {bool(YANDEX_CLOUD_API_KEY and YANDEX_CLOUD_FOLDER_ID)}")
-
     app.run(host='0.0.0.0', port=port, debug=debug)
