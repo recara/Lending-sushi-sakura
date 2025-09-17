@@ -7,6 +7,15 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
+    /* Основные цвета */
+    :root {
+      --primary-red: #d70000;
+      --primary-white: #ffffff;
+      --light-red: #ff5252;
+      --dark-red: #a30000;
+      --light-gray: #f5f5f5;
+      --text-dark: #333333;
+    }
     .fade-in { animation: fadeIn 1.2s ease-in-out forwards; opacity: 0; }
     @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
     .btn-wiggle:hover { animation: wiggle 0.6s ease-in-out; }
@@ -19,520 +28,134 @@
     .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
     /* Стили для маркетплейса */
-    .category-filter-container {
-      position: relative;
-      width: 100%;
-    }
+    .category-filter-container { position: relative; width: 100%; }
     .category-filter-container::before,
     .category-filter-container::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      width: 30px;
-      pointer-events: none;
-      z-index: 2;
-    }
-    .category-filter-container::before {
-      left: 0;
-      background: linear-gradient(to right, rgba(15, 23, 42, 1), transparent);
-    }
-    .category-filter-container::after {
-      right: 0;
-      background: linear-gradient(to left, rgba(15, 23, 42, 1), transparent);
-    }
-    .category-filter {
-      display: flex;
-      overflow-x: auto;
-      gap: 0.75rem;
-      padding: 1rem 0;
-      scrollbar-width: none;
-      -ms-overflow-style: none;
-    }
-    .category-filter::-webkit-scrollbar {
+      content: none;
       display: none;
     }
-    .category-filter::-webkit-scrollbar-track {
-      background: transparent;
-    }
-    .category-filter::-webkit-scrollbar-thumb {
-      background: transparent;
-    }
-    .category-btn {
-      flex-shrink: 0;
-      padding: 0.5rem 1.25rem;
-      border-radius: 2rem;
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      transition: all 0.3s ease;
-      white-space: nowrap;
-    }
-    .category-btn.active, .category-btn:hover {
-      background: #dc2626;
-      border-color: #dc2626;
-    }
-    .item-counter {
-      position: absolute;
-      top: -8px;
-      right: -8px;
-      background: #dc2626;
-      color: white;
-      border-radius: 50%;
-      width: 22px;
-      height: 22px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.75rem;
-      font-weight: bold;
-    }
-    .sort-filter {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 0.5rem;
-      padding: 0.5rem 1rem;
-      color: white;
-      appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23fff'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 0.75rem center;
-      background-size: 16px;
-      padding-right: 2.5rem;
-    }
+    .category-filter { display: flex; overflow-x: auto; gap: 0.75rem; padding: 1rem 0; scrollbar-width: none; -ms-overflow-style: none; }
+    .category-filter::-webkit-scrollbar { display: none; }
+    .category-btn { flex-shrink: 0; padding: 0.5rem 1.25rem; border-radius: 2rem; background: rgba(255, 255, 255, 0.9); border: 1px solid var(--primary-red); transition: all 0.3s ease; white-space: nowrap; color: var(--primary-red); }
+    .category-btn.active, .category-btn:hover { background: var(--primary-red); border-color: var(--primary-red); color: var(--primary-white); }
+    .item-counter { position: absolute; top: -8px; right: -8px; background: var(--primary-red); color: var(--primary-white); border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: bold; }
+    .sort-filter { background: rgba(255, 255, 255, 0.9); border: 1px solid var(--primary-red); border-radius: 0.5rem; padding: 0.5rem 1rem; color: var(--text-dark); appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23d70000'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.75rem center; background-size: 16px; padding-right: 2.5rem; }
 
     /* Стили для чат-бота */
-    .chat-container {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      z-index: 1000;
-      width: 350px;
-      max-height: 500px;
-      display: flex;
-      flex-direction: column;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-      transform: translateY(100%);
-      opacity: 0;
-      visibility: hidden;
-      transition: all 0.3s ease;
-    }
-    .chat-container.active {
-      transform: translateY(0);
-      opacity: 1;
-      visibility: visible;
-    }
-    .chat-header {
-      background: #dc2626;
-      color: white;
-      padding: 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      cursor: pointer;
-    }
-    .chat-body {
-      flex: 1;
-      background: #1f2937;
-      padding: 16px;
-      overflow-y: auto;
-      max-height: 350px;
-    }
-    .chat-input-container {
-      display: flex;
-      background: #111827;
-      padding: 12px;
-    }
-    .chat-input {
-      flex: 1;
-      padding: 10px 15px;
-      border-radius: 20px;
-      border: none;
-      background: #374151;
-      color: white;
-      outline: none;
-    }
-    .chat-send-btn {
-      background: #dc2626;
-      color: white;
-      border: none;
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      margin-left: 10px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background 0.3s;
-    }
-    .chat-send-btn:hover {
-      background: #b91c1c;
-    }
-    .chat-toggle {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      width: 60px;
-      height: 60px;
-      background: #dc2626;
-      color: white;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-      z-index: 1001;
-      transition: all 0.3s ease;
-    }
-    .chat-toggle:hover {
-      transform: scale(1.1);
-      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
-    }
-    .message {
-      margin-bottom: 15px;
-      display: flex;
-    }
-    .message.user {
-      justify-content: flex-end;
-    }
-    .message.bot {
-      justify-content: flex-start;
-    }
-    .message-content {
-      max-width: 80%;
-      padding: 10px 15px;
-      border-radius: 18px;
-      font-size: 14px;
-    }
-    .user .message-content {
-      background: #dc2626;
-      color: white;
-      border-bottom-right-radius: 4px;
-    }
-    .bot .message-content {
-      background: #374151;
-      color: #e5e7eb;
-      border-bottom-left-radius: 4px;
-    }
+    .chat-container { position: fixed; bottom: 20px; right: 20px; z-index: 1000; width: 350px; max-height: 500px; display: flex; flex-direction: column; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); transform: translateY(100%); opacity: 0; visibility: hidden; transition: all 0.3s ease; background: var(--primary-white); border: 1px solid var(--primary-red); }
+    .chat-container.active { transform: translateY(0); opacity: 1; visibility: visible; }
+    .chat-header { background: var(--primary-red); color: var(--primary-white); padding: 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+    .chat-body { flex: 1; background: var(--primary-white); padding: 16px; overflow-y: auto; max-height: 350px; }
+    .chat-input-container { display: flex; background: var(--light-gray); padding: 12px; }
+    .chat-input { flex: 1; padding: 10px 15px; border-radius: 20px; border: 1px solid #ccc; background: var(--primary-white); color: var(--text-dark); outline: none; }
+    .chat-send-btn { background: var(--primary-red); color: var(--primary-white); border: none; width: 40px; height: 40px; border-radius: 50%; margin-left: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.3s; }
+    .chat-send-btn:hover { background: var(--dark-red); }
+    .chat-toggle { position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; background: var(--primary-red); color: var(--primary-white); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); z-index: 1001; transition: all 0.3s ease; }
+    .chat-toggle:hover { transform: scale(1.1); box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4); }
+    .message { margin-bottom: 15px; display: flex; }
+    .message.user { justify-content: flex-end; }
+    .message.bot { justify-content: flex-start; }
+    .message-content { max-width: 80%; padding: 10px 15px; border-radius: 18px; font-size: 14px; }
+    .user .message-content { background: var(--primary-red); color: var(--primary-white); border-bottom-right-radius: 4px; }
+    .bot .message-content { background: var(--light-gray); color: var(--text-dark); border-bottom-left-radius: 4px; }
 
     /* Фиксированное меню */
-    .header {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      z-index: 999;
-      background: rgba(15, 23, 42, 0.95); /* bg-gray-900/90 */
-      backdrop-filter: blur(10px);
-      transition: all 0.3s ease;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    }
-    .header.scrolled {
-      padding-top: 0.5rem;
-      padding-bottom: 0.5rem;
-    }
+    .header { position: fixed; top: 0; left: 0; width: 100%; z-index: 999; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); transition: all 0.3s ease; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); border-bottom: 2px solid var(--primary-red); }
+    .header.scrolled { padding-top: 0.5rem; padding-bottom: 0.5rem; }
 
-    /* Секция преимуществ */
-    .benefit-card {
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-    .benefit-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-    }
-
-    /* Секция акций */
-    .promo-card {
-      transition: transform 0.3s ease;
-    }
-    .promo-card:hover {
-      transform: scale(1.02);
-    }
+    /* Карточки */
+    .benefit-card { transition: transform 0.3s ease, box-shadow 0.3s ease; background: var(--primary-white); border: 1px solid var(--light-gray); }
+    .benefit-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); border-color: var(--primary-red); }
+    .promo-card { transition: transform 0.3s ease; background: var(--primary-white); border: 1px solid var(--light-gray); }
+    .promo-card:hover { transform: scale(1.02); border-color: var(--primary-red); }
 
     /* Корзина */
-    .cart-container {
-      position: fixed;
-      top: 0;
-      right: -400px;
-      width: 380px;
-      height: 100vh;
-      background: #1f2937;
-      box-shadow: -5px 0 15px rgba(0, 0, 0, 0.5);
-      z-index: 1002;
-      transition: right 0.3s ease;
-      display: flex;
-      flex-direction: column;
-    }
-    .cart-container.active {
-      right: 0;
-    }
-    .cart-header {
-      padding: 20px;
-      background: #111827;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .cart-body {
-      flex: 1;
-      overflow-y: auto;
-      padding: 20px;
-    }
-    .cart-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 15px 0;
-      border-bottom: 1px solid #374151;
-    }
-    .cart-item:last-child {
-      border-bottom: none;
-    }
-    .cart-item-info {
-      flex: 1;
-    }
-    .cart-item-price {
-      margin: 0 15px;
-      min-width: 60px;
-      text-align: right;
-    }
-    .cart-item-quantity {
-      display: flex;
-      align-items: center;
-    }
-    .quantity-btn {
-      width: 28px;
-      height: 28px;
-      background: #374151;
-      border: none;
-      color: white;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-    }
-    .quantity-btn:hover {
-      background: #4b5563;
-    }
-    .quantity-value {
-      margin: 0 10px;
-      min-width: 20px;
-      text-align: center;
-    }
-    .cart-footer {
-      padding: 20px;
-      background: #111827;
-      border-top: 1px solid #374151;
-    }
-    .cart-total {
-      display: flex;
-      justify-content: space-between;
-      font-size: 1.2rem;
-      font-weight: bold;
-      margin-bottom: 20px;
-    }
-    .checkout-btn {
-      width: 100%;
-      padding: 15px;
-      background: #dc2626;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-size: 1.1rem;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    .checkout-btn:hover {
-      background: #b91c1c;
-    }
-    .remove-item {
-      color: #9ca3af;
-      cursor: pointer;
-      margin-left: 15px;
-    }
-    .remove-item:hover {
-      color: #ef4444;
-    }
+    .cart-container { position: fixed; top: 0; right: -400px; width: 380px; height: 100vh; background: var(--primary-white); box-shadow: -5px 0 15px rgba(0, 0, 0, 0.5); z-index: 1002; transition: right 0.3s ease; display: flex; flex-direction: column; border-left: 2px solid var(--primary-red); }
+    .cart-container.active { right: 0; }
+    .cart-header { padding: 20px; background: var(--primary-red); color: var(--primary-white); display: flex; justify-content: space-between; align-items: center; }
+    .cart-body { flex: 1; overflow-y: auto; padding: 20px; background: var(--primary-white); }
+    .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid var(--light-gray); }
+    .cart-item:last-child { border-bottom: none; }
+    .cart-item-info { flex: 1; }
+    .cart-item-price { margin: 0 15px; min-width: 60px; text-align: right; }
+    .cart-item-quantity { display: flex; align-items: center; }
+    .quantity-btn { width: 28px; height: 28px; background: var(--light-gray); border: none; color: var(--text-dark); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+    .quantity-btn:hover { background: var(--primary-red); color: var(--primary-white); }
+    .quantity-value { margin: 0 10px; min-width: 20px; text-align: center; }
+    .cart-footer { padding: 20px; background: var(--primary-white); border-top: 1px solid var(--light-gray); }
+    .cart-total { display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: bold; margin-bottom: 20px; }
+    .checkout-btn { width: 100%; padding: 15px; background: var(--primary-red); color: var(--primary-white); border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: background 0.3s; }
+    .checkout-btn:hover { background: var(--dark-red); }
+    .remove-item { color: #9ca3af; cursor: pointer; margin-left: 15px; }
+    .remove-item:hover { color: var(--primary-red); }
 
     /* Overlay для корзины */
-    .cart-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.5);
-      z-index: 1001;
-      display: none;
-    }
-    .cart-overlay.active {
-      display: block;
-    }
+    .cart-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 1001; display: none; }
+    .cart-overlay.active { display: block; }
 
     /* Форма оформления заказа */
-    .checkout-form {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.8);
-      z-index: 1003;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      visibility: hidden;
-      transition: all 0.3s ease;
-    }
-    .checkout-form.active {
-      opacity: 1;
-      visibility: visible;
-    }
-    .checkout-form-container {
-      background: #1f2937;
-      border-radius: 12px;
-      width: 90%;
-      max-width: 500px;
-      max-height: 90vh;
-      overflow-y: auto;
-      padding: 30px;
-    }
-    .form-group {
-      margin-bottom: 20px;
-    }
-    .form-group label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: bold;
-    }
-    .form-group input,
-    .form-group textarea,
-    .form-group select {
-      width: 100%;
-      padding: 12px;
-      border-radius: 8px;
-      border: 1px solid #374151;
-      background: #111827;
-      color: white;
-    }
-    .form-group input:focus,
-    .form-group textarea:focus,
-    .form-group select:focus {
-      outline: none;
-      border-color: #dc2626;
-    }
+    .checkout-form { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 1003; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: all 0.3s ease; }
+    .checkout-form.active { opacity: 1; visibility: visible; }
+    .checkout-form-container { background: var(--primary-white); border-radius: 12px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; padding: 30px; border: 2px solid var(--primary-red); }
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; margin-bottom: 5px; font-weight: bold; color: var(--text-dark); }
+    .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; background: var(--primary-white); color: var(--text-dark); }
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus { outline: none; border-color: var(--primary-red); }
 
     /* Мобильная адаптация */
     @media (max-width: 768px) {
-      .hero-section {
-        background-position: center 30% !important;
-        padding: 0 1rem;
-      }
-      .hero-title {
-        font-size: 2.5rem !important;
-        margin-bottom: 1rem !important;
-      }
-      .hero-subtitle {
-        font-size: 0.9rem !important;
-        line-height: 1.4 !important;
-        padding: 0 0.5rem;
-      }
-      .menu-grid {
-        grid-template-columns: 1fr !important;
-        gap: 1rem !important;
-      }
-      .menu-item {
-        margin: 0 auto;
-        max-width: 320px;
-      }
-      .section-padding {
-        padding: 3rem 1rem !important;
-      }
-      .category-filter {
-        padding: 0.75rem 0;
-      }
-      .category-btn {
-        padding: 0.5rem 1rem;
-        font-size: 0.9rem;
-      }
+      .hero-section { background-position: center 30% !important; padding: 0 1rem; }
+      .hero-title { font-size: 2.5rem !important; margin-bottom: 1rem !important; }
+      .hero-subtitle { font-size: 0.9rem !important; line-height: 1.4 !important; padding: 0 0.5rem; }
+      .menu-grid { grid-template-columns: 1fr !important; gap: 1rem !important; }
+      .menu-item { margin: 0 auto; max-width: 320px; }
+      .section-padding { padding: 3rem 1rem !important; }
+      .category-filter { padding: 0.75rem 0; }
+      .category-btn { padding: 0.5rem 1rem; font-size: 0.9rem; }
       /* Адаптация чата для мобильных */
-      .chat-container {
-        width: calc(100% - 40px);
-        max-height: 70vh;
-      }
+      .chat-container { width: calc(100% - 40px); max-height: 70vh; }
       /* Мобильное меню */
-      .mobile-menu {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(15, 23, 42, 0.98);
-        z-index: 1000;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        transform: translateX(-100%);
-        transition: transform 0.3s ease;
-      }
-      .mobile-menu.active {
-        transform: translateX(0);
-      }
-      .mobile-menu ul {
-        width: 100%;
-        text-align: center;
-      }
-      .mobile-menu ul li {
-        margin: 1.5rem 0;
-      }
-      .mobile-menu ul li a {
-        font-size: 1.5rem;
-        color: white;
-        text-decoration: none;
-      }
+      .mobile-menu { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.98); z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; transform: translateX(-100%); transition: transform 0.3s ease; }
+      .mobile-menu.active { transform: translateX(0); }
+      .mobile-menu ul { width: 100%; text-align: center; }
+      .mobile-menu ul li { margin: 1.5rem 0; }
+      .mobile-menu ul li a { font-size: 1.5rem; color: var(--text-dark); text-decoration: none; }
       /* Адаптация корзины для мобильных */
-      .cart-container {
-        width: 100%;
-        right: -100%;
-      }
-      .cart-container.active {
-        right: 0;
-      }
+      .cart-container { width: 100%; right: -100%; }
+      .cart-container.active { right: 0; }
       /* Адаптация формы заказа для мобильных */
-      .checkout-form-container {
-        width: 95%;
-        padding: 20px;
-      }
+      .checkout-form-container { width: 95%; padding: 20px; }
     }
+
+    /* Новые утилиты для темы */
+    .bg-red-theme { background-color: var(--primary-red); }
+    .text-red-theme { color: var(--primary-red); }
+    .border-red-theme { border-color: var(--primary-red); }
+    .bg-white-theme { background-color: var(--primary-white); }
+    .menu-item { background: var(--primary-white) !important; border: 1px solid var(--light-gray); }
+    .menu-item:hover { border-color: var(--primary-red); }
   </style>
 </head>
-<body class="bg-gray-900 text-white font-sans overflow-x-hidden">
+<body class="bg-white-theme text-gray-900 font-sans overflow-x-hidden">
 
   <!-- Фиксированное меню -->
   <header class="header py-4 px-4 md:px-20" id="main-header">
-    <div class="max-w-7xl mx-auto flex justify-between items-center">
-      <a href="#" class="text-2xl font-bold text-red-500">Sakura Sushi</a>
-      <nav class="hidden md:flex space-x-8">
-        <a href="#menu" class="hover:text-red-400 transition">Меню</a>
-        <a href="#about" class="hover:text-red-400 transition">О нас</a>
-        <a href="#delivery" class="hover:text-red-400 transition">Доставка</a>
-        <a href="#contact" class="hover:text-red-400 transition">Контакты</a>
+    <div class="max-w-7xl mx-auto grid grid-cols-3 items-center">
+      <a href="#" class="text-2xl font-bold text-red-theme">Sakura Sushi</a>
+      <nav class="hidden md:flex justify-center space-x-8">
+        <a href="#menu" class="transition hover:text-red-theme">Меню</a>
+        <a href="#about" class="transition hover:text-red-theme">О нас</a>
+        <a href="#delivery" class="transition hover:text-red-theme">Доставка</a>
+        <a href="#contact" class="transition hover:text-red-theme">Контакты</a>
       </nav>
-      <div class="flex items-center space-x-4">
+      <div class="flex items-center space-x-4 justify-self-end">
         <div class="relative">
-          <button id="cart-toggle-header" class="p-2 bg-gray-800 rounded-lg hover:bg-gray-700 transition">
-            <i class="fas fa-shopping-cart"></i>
+          <button id="cart-toggle-header" class="p-2 bg-white rounded-lg hover:bg-red-50 transition border border-red-theme">
+            <i class="fas fa-shopping-cart text-red-theme"></i>
             <span class="item-counter">0</span>
           </button>
         </div>
-        <button id="mobile-menu-toggle" class="md:hidden text-2xl">
+        <button id="mobile-menu-toggle" class="md:hidden text-2xl text-red-theme">
           <i class="fas fa-bars"></i>
         </button>
       </div>
@@ -555,17 +178,17 @@
   <!-- Hero -->
   <section class="relative h-screen flex flex-col items-center justify-center text-center bg-cover bg-center hero-section pt-16" 
     style="background-image:url('https://avatars.mds.yandex.net/i?id=7a3d05130f17ca47ef1dad0c28fc6eebf3af5b12-4290022-images-thumbs&n=13');">
-    <div class="absolute inset-0 bg-black/60"></div>
+    <div class="absolute inset-0 bg-white bg-opacity-80"></div>
     <div class="relative z-10 fade-in max-w-3xl w-full px-4">
-      <h1 class="text-4xl md:text-5xl lg:text-7xl font-extrabold mb-4 md:mb-6 tracking-wide hero-title">Sakura Sushi</h1>
-      <p class="text-base md:text-lg lg:text-xl text-gray-200 mb-6 md:mb-8 px-2 hero-subtitle">
+      <h1 class="text-4xl md:text-5xl lg:text-7xl font-extrabold mb-4 md:mb-6 tracking-wide hero-title text-red-theme">Sakura Sushi</h1>
+      <p class="text-base md:text-lg lg:text-xl text-gray-700 mb-6 md:mb-8 px-2 hero-subtitle">
         Свежие суши и роллы с доставкой по городу
       </p>
       <div class="flex flex-col sm:flex-row gap-4 justify-center">
-        <a href="#menu" class="px-6 py-3 md:px-8 md:py-4 bg-red-600 hover:bg-red-700 rounded-full text-lg md:text-xl font-semibold transition btn-wiggle shadow-lg text-center">
+        <a href="#menu" class="px-6 py-3 md:px-8 md:py-4 bg-red-theme hover:bg-dark-red rounded-full text-lg md:text-xl font-semibold transition btn-wiggle shadow-lg text-center text-white">
           Смотреть меню
         </a>
-        <a href="#contact" class="px-6 py-3 md:px-8 md:py-4 bg-transparent border-2 border-red-600 text-red-600 hover:bg-red-600 hover:text-white rounded-full text-lg md:text-xl font-semibold transition shadow-lg text-center">
+        <a href="#contact" class="px-6 py-3 md:px-8 md:py-4 bg-transparent border-2 border-red-theme text-red-theme hover:bg-red-theme hover:text-white rounded-full text-lg md:text-xl font-semibold transition shadow-lg text-center">
           Заказать звонок
         </a>
       </div>
@@ -573,59 +196,59 @@
   </section>
 
   <!-- Преимущества -->
-  <section class="py-16 md:py-24 px-4 md:px-20 bg-gradient-to-b from-gray-900 to-black section-padding">
+  <section class="py-16 md:py-24 px-4 md:px-20 bg-white-theme section-padding">
     <div class="max-w-7xl mx-auto">
       <div class="text-center mb-16">
-        <h2 class="text-3xl md:text-4xl font-bold mb-4">Почему выбирают нас</h2>
-        <div class="w-24 h-1 bg-red-600 mx-auto"></div>
+        <h2 class="text-3xl md:text-4xl font-bold mb-4 text-red-theme">Почему выбирают нас</h2>
+        <div class="w-24 h-1 bg-red-theme mx-auto"></div>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div class="benefit-card bg-gray-800 rounded-2xl p-6 text-center">
-          <div class="text-4xl text-red-500 mb-4">
+        <div class="benefit-card bg-white-theme rounded-2xl p-6 text-center">
+          <div class="text-4xl text-red-theme mb-4">
             <i class="fas fa-fish"></i>
           </div>
           <h3 class="text-xl font-bold mb-2">Свежие ингредиенты</h3>
-          <p class="text-gray-400">Мы используем только свежайшие продукты и традиционные японские техники приготовления</p>
+          <p class="text-gray-600">Мы используем только свежайшие продукты и традиционные японские техники приготовления</p>
         </div>
-        <div class="benefit-card bg-gray-800 rounded-2xl p-6 text-center">
-          <div class="text-4xl text-red-500 mb-4">
+        <div class="benefit-card bg-white-theme rounded-2xl p-6 text-center">
+          <div class="text-4xl text-red-theme mb-4">
             <i class="fas fa-shipping-fast"></i>
           </div>
           <h3 class="text-xl font-bold mb-2">Быстрая доставка</h3>
-          <p class="text-gray-400">Доставим ваш заказ в течение 45 минут в любую точку города</p>
+          <p class="text-gray-600">Доставим ваш заказ в течение 45 минут в любую точку города</p>
         </div>
-        <div class="benefit-card bg-gray-800 rounded-2xl p-6 text-center">
-          <div class="text-4xl text-red-500 mb-4">
+        <div class="benefit-card bg-white-theme rounded-2xl p-6 text-center">
+          <div class="text-4xl text-red-theme mb-4">
             <i class="fas fa-star"></i>
           </div>
           <h3 class="text-xl font-bold mb-2">172 блюда</h3>
-          <p class="text-gray-400">Широкий ассортимент роллов, суши, супов и десертов на любой вкус</p>
+          <p class="text-gray-600">Широкий ассортимент роллов, суши, супов и десертов на любой вкус</p>
         </div>
       </div>
     </div>
   </section>
 
   <!-- Акции -->
-  <section class="py-16 md:py-24 px-4 md:px-20 bg-gradient-to-b from-black to-gray-900 section-padding">
+  <section class="py-16 md:py-24 px-4 md:px-20 bg-light-gray section-padding">
     <div class="max-w-7xl mx-auto">
       <div class="text-center mb-16">
-        <h2 class="text-3xl md:text-4xl font-bold mb-4">Акции и новости</h2>
-        <div class="w-24 h-1 bg-red-600 mx-auto"></div>
+        <h2 class="text-3xl md:text-4xl font-bold mb-4 text-red-theme">Акции и новости</h2>
+        <div class="w-24 h-1 bg-red-theme mx-auto"></div>
       </div>
-        <div class="promo-card bg-gray-800 rounded-2xl overflow-hidden">
-          <img src="https://tokyo-bar.ru/upload/iblock/c8b/3mmnt8itaj53cdve3dyhhh5kpncpvu98/SAI_T-_14_.jpg" alt="Кешбэк на первый заказ" class="w-full h-48 object-cover">
+        <div class="promo-card bg-white-theme rounded-2xl overflow-hidden">
+          <img src="https://avatars.mds.yandex.net/i?id=0c3401801cebb911e3dc86be2684bea0152cafb7-5398918-images-thumbs&n=13" alt="Кешбэк на первый заказ" class="w-full h-48 object-cover">
           <div class="p-6">
             <h3 class="text-xl font-bold mb-2">Кешбэк на первый заказ</h3>
-            <p class="text-gray-400 mb-4">Получите 10% кешбэка при первом заказе через сайт!</p>
-            <a href="#" class="text-red-500 hover:text-red-400 font-semibold">Подробнее →</a>
+            <p class="text-gray-600 mb-4">Получите 10% кешбэка при первом заказе через сайт!</p>
+            <a href="#" class="text-red-theme hover:text-dark-red font-semibold">Подробнее →</a>
           </div>
         </div>
-        <div class="promo-card bg-gray-800 rounded-2xl overflow-hidden">
-          <img src="https://tokyo-bar.ru/upload/iblock/e1e/pf0jcov994totlhj4c0tqufctf7kiwbn/Desk_aktualno_10_.png" alt="Скидка на самовывоз" class="w-full h-48 object-cover">
+        <div class="promo-card bg-white-theme rounded-2xl overflow-hidden">
+          <img src="https://avatars.mds.yandex.net/i?id=1cad7d61b056dcd31c49b5c82a203b7a02fc05df-8497446-images-thumbs&n=13" alt="Скидка на самовывоз" class="w-full h-48 object-cover">
           <div class="p-6">
             <h3 class="text-xl font-bold mb-2">Скидка на самовывоз</h3>
-            <p class="text-gray-400 mb-4">Получите 15% скидку при самовывозе заказа!</p>
-            <a href="#" class="text-red-500 hover:text-red-400 font-semibold">Подробнее →</a>
+            <p class="text-gray-600 mb-4">Получите 15% скидку при самовывозе заказа!</p>
+            <a href="#" class="text-red-theme hover:text-dark-red font-semibold">Подробнее →</a>
           </div>
         </div>
       </div>
@@ -633,14 +256,14 @@
   </section>
 
   <!-- Menu -->
-  <section id="menu" class="py-16 md:py-24 px-4 md:px-20 bg-gradient-to-b from-transparent to-black/20 section-padding">
+  <section id="menu" class="py-16 md:py-24 px-4 md:px-20 bg-white-theme section-padding">
     <div class="max-w-7xl mx-auto">
       <div class="text-center mb-12 md:mb-16">
         <div class="mb-4">
-          <span class="text-sm tracking-[0.3em] text-yellow-300 uppercase font-light">メニュー</span>
+          <span class="text-sm tracking-[0.3em] text-red-theme uppercase font-light">メニュー</span>
         </div>
-        <h2 class="text-3xl md:text-5xl lg:text-6xl font-light mb-4 md:mb-6 text-white">Наше меню</h2>
-        <div class="w-24 h-px bg-gradient-to-r from-transparent via-yellow-400 to-transparent mx-auto"></div>
+        <h2 class="text-3xl md:text-5xl lg:text-6xl font-light mb-4 md:mb-6 text-red-theme">Наше меню</h2>
+        <div class="w-24 h-px bg-gradient-to-r from-transparent via-red-theme to-transparent mx-auto"></div>
       </div>
 
       <!-- Фильтры и сортировка как в маркетплейсе -->
@@ -659,8 +282,6 @@
               <button class="category-btn" data-category="desserts">Десерты</button>
               <button class="category-btn" data-category="drinks">Напитки</button>
               <button class="category-btn" data-category="snacks">Закуски</button>
-              <button class="category-btn" data-category="bento">Бенто</button>
-              <button class="category-btn" data-category="tempura">Темпура</button>
             </div>
           </div>
         </div>
@@ -672,8 +293,8 @@
             <option value="new">Новинки</option>
           </select>
           <div class="relative">
-            <button id="cart-toggle" class="p-2 bg-gray-800 rounded-lg hover:bg-gray-700 transition">
-              <i class="fas fa-shopping-cart"></i>
+            <button id="cart-toggle" class="p-2 bg-white rounded-lg hover:bg-red-50 transition border border-red-theme">
+              <i class="fas fa-shopping-cart text-red-theme"></i>
               <span class="item-counter">0</span>
             </button>
           </div>
@@ -683,7 +304,7 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-10 menu-grid">
 
         <!-- 1 -->
-        <div class="bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:scale-105 transition duration-300 menu-item" data-category="rolls">
+        <div class="menu-item bg-white-theme rounded-2xl overflow-hidden shadow-lg hover:scale-105 transition duration-300" data-category="rolls">
           <div class="relative">
             <img src="https://avatars.mds.yandex.net/i?id=8576130dcdd13973095d8c75482182f6e93a19df-4854935-images-thumbs&n=13" class="w-full h-48 md:h-52 object-cover" alt="Филадельфия">
             <button class="absolute top-3 right-3 w-9 h-9 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center transition add-to-cart">
@@ -692,16 +313,16 @@
           </div>
           <div class="p-4 md:p-6">
             <h3 class="text-xl md:text-2xl font-semibold mb-2">Филадельфия</h3>
-            <p class="text-gray-300 mb-4 text-sm md:text-base">Лосось, сливочный сыр, авокадо, огурец. 8 шт., 250 г.</p>
+            <p class="text-gray-600 mb-4 text-sm md:text-base">Лосось, сливочный сыр, авокадо, огурец. 8 шт., 250 г.</p>
             <div class="flex justify-between items-center">
               <span class="text-lg md:text-xl font-bold">490 ₽</span>
-              <button class="px-3 py-2 md:px-4 md:py-2 bg-red-600 rounded-lg hover:bg-red-700 transition text-sm md:text-base add-to-cart-btn">В корзину</button>
+              <button class="px-3 py-2 md:px-4 md:py-2 bg-red-theme rounded-lg hover:bg-dark-red transition text-sm md:text-base add-to-cart-btn text-white">В корзину</button>
             </div>
           </div>
         </div>
 
         <!-- 2 -->
-        <div class="bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:scale-105 transition duration-300 menu-item" data-category="rolls">
+        <div class="menu-item bg-white-theme rounded-2xl overflow-hidden shadow-lg hover:scale-105 transition duration-300" data-category="rolls">
           <div class="relative">
             <img src="https://mir-s3-cdn-cf.behance.net/project_modules/max_3840/7431b582203759.5d1607ad5a3c2.jpg" class="w-full h-48 md:h-52 object-cover" alt="Сет Самурай">
             <button class="absolute top-3 right-3 w-9 h-9 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center transition add-to-cart">
@@ -710,16 +331,16 @@
           </div>
           <div class="p-4 md:p-6">
             <h3 class="text-xl md:text-2xl font-semibold mb-2">Сет Самурай</h3>
-            <p class="text-gray-300 mb-4 text-sm md:text-base">30 шт.: Филадельфия, Калифорния, Темпура, Чиз ролл. 950 г.</p>
+            <p class="text-gray-600 mb-4 text-sm md:text-base">30 шт.: Филадельфия, Калифорния, Темпура, Чиз ролл. 950 г.</p>
             <div class="flex justify-between items-center">
               <span class="text-lg md:text-xl font-bold">1390 ₽</span>
-              <button class="px-3 py-2 md:px-4 md:py-2 bg-red-600 rounded-lg hover:bg-red-700 transition text-sm md:text-base add-to-cart-btn">В корзину</button>
+              <button class="px-3 py-2 md:px-4 md:py-2 bg-red-theme rounded-lg hover:bg-dark-red transition text-sm md:text-base add-to-cart-btn text-white">В корзину</button>
             </div>
           </div>
         </div>
 
         <!-- 3 -->
-        <div class="bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:scale-105 transition duration-300 menu-item" data-category="noodles">
+        <div class="menu-item bg-white-theme rounded-2xl overflow-hidden shadow-lg hover:scale-105 transition duration-300" data-category="noodles">
           <div class="relative">
             <img src="https://avatars.mds.yandex.net/i?id=b6eec287b79f84376c9500a1f5c064f76b435b24-10779221-images-thumbs&n=13" class="w-full h-48 md:h-52 object-cover" alt="Рамен">
             <button class="absolute top-3 right-3 w-9 h-9 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center transition add-to-cart">
@@ -728,10 +349,10 @@
           </div>
           <div class="p-4 md:p-6">
             <h3 class="text-xl md:text-2xl font-semibold mb-2">Рамен</h3>
-            <p class="text-gray-300 mb-4 text-sm md:text-base">Куриный бульон, лапша, яйцо, нори, свинина Чашу. 400 г.</p>
+            <p class="text-gray-600 mb-4 text-sm md:text-base">Куриный бульон, лапша, яйцо, нори, свинина Чашу. 400 г.</p>
             <div class="flex justify-between items-center">
               <span class="text-lg md:text-xl font-bold">450 ₽</span>
-              <button class="px-3 py-2 md:px-4 md:py-2 bg-red-600 rounded-lg hover:bg-red-700 transition text-sm md:text-base add-to-cart-btn">В корзину</button>
+              <button class="px-3 py-2 md:px-4 md:py-2 bg-red-theme rounded-lg hover:bg-dark-red transition text-sm md:text-base add-to-cart-btn text-white">В корзину</button>
             </div>
           </div>
         </div>
@@ -1063,7 +684,7 @@
         <!-- 25 -->
         <div class="bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:scale-105 transition duration-300 menu-item" data-category="salads">
           <div class="relative">
-            <img src="https://tokyo-bar.ru/upload/iblock/5a2/5a2c7b1f0a0a0a0a0a0a0a0a0a0a0a0a/seaweed_salad.jpg" class="w-full h-48 md:h-52 object-cover" alt="Салат из водорослей">
+            <img src="data:image/jpeg;base64,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" class="w-full h-48 md:h-52 object-cover" alt="Салат из водорослей">
             <button class="absolute top-3 right-3 w-9 h-9 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center transition add-to-cart">
               <i class="fas fa-plus text-white text-sm"></i>
             </button>
@@ -1078,98 +699,7 @@
           </div>
         </div>
 
-        <!-- 26 -->
-        <div class="bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:scale-105 transition duration-300 menu-item" data-category="soups">
-          <div class="relative">
-            <img src="https://tokyo-bar.ru/upload/iblock/491/491c7b1f0a0a0a0a0a0a0a0a0a0a0a0a/miso_soup_with_tofu.jpg" class="w-full h-48 md:h-52 object-cover" alt="Мисо суп с тофу">
-            <button class="absolute top-3 right-3 w-9 h-9 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center transition add-to-cart">
-              <i class="fas fa-plus text-white text-sm"></i>
-            </button>
-          </div>
-          <div class="p-4 md:p-6">
-            <h3 class="text-xl md:text-2xl font-semibold mb-2">Мисо суп с тофу</h3>
-            <p class="text-gray-300 mb-4 text-sm md:text-base">Традиционный японский суп с тофу и вакаме. 300 мл.</p>
-            <div class="flex justify-between items-center">
-              <span class="text-lg md:text-xl font-bold">210 ₽</span>
-              <button class="px-3 py-2 md:px-4 md:py-2 bg-red-600 rounded-lg hover:bg-red-700 transition text-sm md:text-base add-to-cart-btn">В корзину</button>
-            </div>
-          </div>
-        </div>
 
-        <!-- 27 -->
-        <div class="bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:scale-105 transition duration-300 menu-item" data-category="desserts">
-          <div class="relative">
-            <img src="https://tokyo-bar.ru/upload/iblock/380/380c7b1f0a0a0a0a0a0a0a0a0a0a0a0a/mochi_ice_cream.jpg" class="w-full h-48 md:h-52 object-cover" alt="Мочи с мороженым">
-            <button class="absolute top-3 right-3 w-9 h-9 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center transition add-to-cart">
-              <i class="fas fa-plus text-white text-sm"></i>
-            </button>
-          </div>
-          <div class="p-4 md:p-6">
-            <h3 class="text-xl md:text-2xl font-semibold mb-2">Мочи с мороженым</h3>
-            <p class="text-gray-300 mb-4 text-sm md:text-base">Традиционные японские десерты с мороженым. 3 шт.</p>
-            <div class="flex justify-between items-center">
-              <span class="text-lg md:text-xl font-bold">280 ₽</span>
-              <button class="px-3 py-2 md:px-4 md:py-2 bg-red-600 rounded-lg hover:bg-red-700 transition text-sm md:text-base add-to-cart-btn">В корзину</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- 28 -->
-        <div class="bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:scale-105 transition duration-300 menu-item" data-category="drinks">
-          <div class="relative">
-            <img src="https://tokyo-bar.ru/upload/iblock/26f/26fc7b1f0a0a0a0a0a0a0a0a0a0a0a0a/ramune_soda.jpg" class="w-full h-48 md:h-52 object-cover" alt="Рамунэ">
-            <button class="absolute top-3 right-3 w-9 h-9 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center transition add-to-cart">
-              <i class="fas fa-plus text-white text-sm"></i>
-            </button>
-          </div>
-          <div class="p-4 md:p-6">
-            <h3 class="text-xl md:text-2xl font-semibold mb-2">Рамунэ</h3>
-            <p class="text-gray-300 mb-4 text-sm md:text-base">Традиционная японская газировка с мраморным вкусом. 330 мл.</p>
-            <div class="flex justify-between items-center">
-              <span class="text-lg md:text-xl font-bold">180 ₽</span>
-              <button class="px-3 py-2 md:px-4 md:py-2 bg-red-600 rounded-lg hover:bg-red-700 transition text-sm md:text-base add-to-cart-btn">В корзину</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- 29 -->
-        <div class="bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:scale-105 transition duration-300 menu-item" data-category="bento">
-          <div class="relative">
-            <img src="https://tokyo-bar.ru/upload/iblock/15e/15ec7b1f0a0a0a0a0a0a0a0a0a0a0a0a/children_bento.jpg" class="w-full h-48 md:h-52 object-cover" alt="Детское бенто">
-            <button class="absolute top-3 right-3 w-9 h-9 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center transition add-to-cart">
-              <i class="fas fa-plus text-white text-sm"></i>
-            </button>
-          </div>
-          <div class="p-4 md:p-6">
-            <h3 class="text-xl md:text-2xl font-semibold mb-2">Детское бенто</h3>
-            <p class="text-gray-300 mb-4 text-sm md:text-base">Маленький бенто для детей с любимыми блюдами. 350 г.</p>
-            <div class="flex justify-between items-center">
-              <span class="text-lg md:text-xl font-bold">450 ₽</span>
-              <button class="px-3 py-2 md:px-4 md:py-2 bg-red-600 rounded-lg hover:bg-red-700 transition text-sm md:text-base add-to-cart-btn">В корзину</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- 30 -->
-        <div class="bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:scale-105 transition duration-300 menu-item" data-category="hot">
-          <div class="relative">
-            <img src="https://tokyo-bar.ru/upload/iblock/04d/04dc7b1f0a0a0a0a0a0a0a0a0a0a0a0a/beef_bulgogi.jpg" class="w-full h-48 md:h-52 object-cover" alt="Говядина булгоги">
-            <button class="absolute top-3 right-3 w-9 h-9 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center transition add-to-cart">
-              <i class="fas fa-plus text-white text-sm"></i>
-            </button>
-          </div>
-          <div class="p-4 md:p-6">
-            <h3 class="text-xl md:text-2xl font-semibold mb-2">Говядина булгоги</h3>
-            <p class="text-gray-300 mb-4 text-sm md:text-base">Маринованная говядина с овощами и рисом. 450 г.</p>
-            <div class="flex justify-between items-center">
-              <span class="text-lg md:text-xl font-bold">620 ₽</span>
-              <button class="px-3 py-2 md:px-4 md:py-2 bg-red-600 rounded-lg hover:bg-red-700 transition text-sm md:text-base add-to-cart-btn">В корзину</button>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
   </section>
 
   <!-- О нас -->
