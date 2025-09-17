@@ -1,0 +1,1972 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Sakura Sushi — японская кухня</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .fade-in { animation: fadeIn 1.2s ease-in-out forwards; opacity: 0; }
+    @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+    .btn-wiggle:hover { animation: wiggle 0.6s ease-in-out; }
+    @keyframes wiggle {
+      0%,100% { transform: rotate(0deg); }
+      25% { transform: rotate(-2deg); }
+      75% { transform: rotate(2deg); }
+    }
+    .scrollbar-hide::-webkit-scrollbar { display: none; }
+    .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* Стили для маркетплейса */
+    .category-filter-container {
+      position: relative;
+      width: 100%;
+    }
+    .category-filter-container::before,
+    .category-filter-container::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 30px;
+      pointer-events: none;
+      z-index: 2;
+    }
+    .category-filter-container::before {
+      left: 0;
+      background: linear-gradient(to right, rgba(15, 23, 42, 1), transparent);
+    }
+    .category-filter-container::after {
+      right: 0;
+      background: linear-gradient(to left, rgba(15, 23, 42, 1), transparent);
+    }
+    .category-filter {
+      display: flex;
+      overflow-x: auto;
+      gap: 0.75rem;
+      padding: 1rem 0;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .category-filter::-webkit-scrollbar {
+      display: none;
+    }
+    .category-filter::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .category-filter::-webkit-scrollbar-thumb {
+      background: transparent;
+    }
+    .category-btn {
+      flex-shrink: 0;
+      padding: 0.5rem 1.25rem;
+      border-radius: 2rem;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      transition: all 0.3s ease;
+      white-space: nowrap;
+    }
+    .category-btn.active, .category-btn:hover {
+      background: #dc2626;
+      border-color: #dc2626;
+    }
+    .item-counter {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background: #dc2626;
+      color: white;
+      border-radius: 50%;
+      width: 22px;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: bold;
+    }
+    .sort-filter {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0.5rem;
+      padding: 0.5rem 1rem;
+      color: white;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23fff'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.75rem center;
+      background-size: 16px;
+      padding-right: 2.5rem;
+    }
+
+    /* Стили для чат-бота */
+    .chat-container {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 1000;
+      width: 350px;
+      max-height: 500px;
+      display: flex;
+      flex-direction: column;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      transform: translateY(100%);
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+    .chat-container.active {
+      transform: translateY(0);
+      opacity: 1;
+      visibility: visible;
+    }
+    .chat-header {
+      background: #dc2626;
+      color: white;
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+    }
+    .chat-body {
+      flex: 1;
+      background: #1f2937;
+      padding: 16px;
+      overflow-y: auto;
+      max-height: 350px;
+    }
+    .chat-input-container {
+      display: flex;
+      background: #111827;
+      padding: 12px;
+    }
+    .chat-input {
+      flex: 1;
+      padding: 10px 15px;
+      border-radius: 20px;
+      border: none;
+      background: #374151;
+      color: white;
+      outline: none;
+    }
+    .chat-send-btn {
+      background: #dc2626;
+      color: white;
+      border: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      margin-left: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.3s;
+    }
+    .chat-send-btn:hover {
+      background: #b91c1c;
+    }
+    .chat-toggle {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 60px;
+      height: 60px;
+      background: #dc2626;
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      z-index: 1001;
+      transition: all 0.3s ease;
+    }
+    .chat-toggle:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+    }
+    .message {
+      margin-bottom: 15px;
+      display: flex;
+    }
+    .message.user {
+      justify-content: flex-end;
+    }
+    .message.bot {
+      justify-content: flex-start;
+    }
+    .message-content {
+      max-width: 80%;
+      padding: 10px 15px;
+      border-radius: 18px;
+      font-size: 14px;
+    }
+    .user .message-content {
+      background: #dc2626;
+      color: white;
+      border-bottom-right-radius: 4px;
+    }
+    .bot .message-content {
+      background: #374151;
+      color: #e5e7eb;
+      border-bottom-left-radius: 4px;
+    }
+
+    /* Фиксированное меню */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 999;
+      background: rgba(15, 23, 42, 0.95); /* bg-gray-900/90 */
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    .header.scrolled {
+      padding-top: 0.5rem;
+      padding-bottom: 0.5rem;
+    }
+
+    /* Секция преимуществ */
+    .benefit-card {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .benefit-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Секция акций */
+    .promo-card {
+      transition: transform 0.3s ease;
+    }
+    .promo-card:hover {
+      transform: scale(1.02);
+    }
+
+    /* Корзина */
+    .cart-container {
+      position: fixed;
+      top: 0;
+      right: -400px;
+      width: 380px;
+      height: 100vh;
+      background: #1f2937;
+      box-shadow: -5px 0 15px rgba(0, 0, 0, 0.5);
+      z-index: 1002;
+      transition: right 0.3s ease;
+      display: flex;
+      flex-direction: column;
+    }
+    .cart-container.active {
+      right: 0;
+    }
+    .cart-header {
+      padding: 20px;
+      background: #111827;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .cart-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+    }
+    .cart-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 0;
+      border-bottom: 1px solid #374151;
+    }
+    .cart-item:last-child {
+      border-bottom: none;
+    }
+    .cart-item-info {
+      flex: 1;
+    }
+    .cart-item-price {
+      margin: 0 15px;
+      min-width: 60px;
+      text-align: right;
+    }
+    .cart-item-quantity {
+      display: flex;
+      align-items: center;
+    }
+    .quantity-btn {
+      width: 28px;
+      height: 28px;
+      background: #374151;
+      border: none;
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .quantity-btn:hover {
+      background: #4b5563;
+    }
+    .quantity-value {
+      margin: 0 10px;
+      min-width: 20px;
+      text-align: center;
+    }
+    .cart-footer {
+      padding: 20px;
+      background: #111827;
+      border-top: 1px solid #374151;
+    }
+    .cart-total {
+      display: flex;
+      justify-content: space-between;
+      font-size: 1.2rem;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+    .checkout-btn {
+      width: 100%;
+      padding: 15px;
+      background: #dc2626;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .checkout-btn:hover {
+      background: #b91c1c;
+    }
+    .remove-item {
+      color: #9ca3af;
+      cursor: pointer;
+      margin-left: 15px;
+    }
+    .remove-item:hover {
+      color: #ef4444;
+    }
+
+    /* Overlay для корзины */
+    .cart-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1001;
+      display: none;
+    }
+    .cart-overlay.active {
+      display: block;
+    }
+
+    /* Форма оформления заказа */
+    .checkout-form {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 1003;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+    .checkout-form.active {
+      opacity: 1;
+      visibility: visible;
+    }
+    .checkout-form-container {
+      background: #1f2937;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 30px;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #374151;
+      background: #111827;
+      color: white;
+    }
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: #dc2626;
+    }
+
+    /* Мобильная адаптация */
+    @media (max-width: 768px) {
+      .hero-section {
+        background-position: center 30% !important;
+        padding: 0 1rem;
+      }
+      .hero-title {
+        font-size: 2.5rem !important;
+        margin-bottom: 1rem !important;
+      }
+      .hero-subtitle {
+        font-size: 0.9rem !important;
+        line-height: 1.4 !important;
+        padding: 0 0.5rem;
+      }
+      .menu-grid {
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
+      }
+      .menu-item {
+        margin: 0 auto;
+        max-width: 320px;
+      }
+      .section-padding {
+        padding: 3rem 1rem !important;
+      }
+      .category-filter {
+        padding: 0.75rem 0;
+      }
+      .category-btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+      }
+      /* Адаптация чата для мобильных */
+      .chat-container {
+        width: calc(100% - 40px);
+        max-height: 70vh;
+      }
+      /* Мобильное меню */
+      .mobile-menu {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(15, 23, 42, 0.98);
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+      }
+      .mobile-menu.active {
+        transform: translateX(0);
+      }
+      .mobile-menu ul {
+        width: 100%;
+        text-align: center;
+      }
+      .mobile-menu ul li {
+        margin: 1.5rem 0;
+      }
+      .mobile-menu ul li a {
+        font-size: 1.5rem;
+        color: white;
+        text-decoration: none;
+      }
+      /* Адаптация корзины для мобильных */
+      .cart-container {
+        width: 100%;
+        right: -100%;
+      }
+      .cart-container.active {
+        right: 0;
+      }
+      /* Адаптация формы заказа для мобильных */
+      .checkout-form-container {
+        width: 95%;
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body class="bg-gray-900 text-white font-sans overflow-x-hidden">
+
+  <!-- Фиксированное меню -->
+  <header class="header py-4 px-4 md:px-20" id="main-header">
+    <div class="max-w-7xl mx-auto flex justify-between items-center">
+      <a href="#" class="text-2xl font-bold text-red-500">Sakura Sushi</a>
+      <nav class="hidden md:flex space-x-8">
+        <a href="#menu" class="hover:text-red-400 transition">Меню</a>
+        <a href="#about" class="hover:text-red-400 transition">О нас</a>
+        <a href="#delivery" class="hover:text-red-400 transition">Доставка</a>
+        <a href="#contact" class="hover:text-red-400 transition">Контакты</a>
+      </nav>
+      <div class="flex items-center space-x-4">
+        <div class="relative">
+          <button id="cart-toggle-header" class="p-2 bg-gray-800 rounded-lg hover:bg-gray-700 transition">
+            <i class="fas fa-shopping-cart"></i>
+            <span class="item-counter">0</span>
+          </button>
+        </div>
+        <button id="mobile-menu-toggle" class="md:hidden text-2xl">
+          <i class="fas fa-bars"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Мобильное меню -->
+  <div class="mobile-menu" id="mobile-menu">
+    <button id="mobile-menu-close" class="absolute top-6 right-6 text-2xl">
+      <i class="fas fa-times"></i>
+    </button>
+    <ul>
+      <li><a href="#menu">Меню</a></li>
+      <li><a href="#about">О нас</a></li>
+      <li><a href="#delivery">Доставка</a></li>
+      <li><a href="#contact">Контакты</a></li>
+    </ul>
+  </div>
+
+  <!-- Hero -->
+  <section class="relative h-screen flex flex-col items-center justify-center text-center bg-cover bg-center hero-section pt-16" 
+    style="background-image:url('https://avatars.mds.yandex.net/i?id=7a3d05130f17ca47ef1dad0c28fc6eebf3af5b12-4290022-images-thumbs&n=13');">
+    <div class="absolute inset-0 bg-black/60"></div>
+    <div class="relative z-10 fade-in max-w-3xl w-full px-4">
+      <h1 class="text-4xl md:text-5xl lg:text-7xl font-extrabold mb-4 md:mb-6 tracking-wide hero-title">Sakura Sushi</h1>
+      <p class="text-base md:text-lg lg:text-xl text-gray-200 mb-6 md:mb-8 px-2 hero-subtitle">
+        Свежие суши и роллы с доставкой по городу
+      </p>
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <a href="#menu" class="px-6 py-3 md:px-8 md:py-4 bg-red-600 hover:bg-red-700 rounded-full text-lg md:text-xl font-semibold transition btn-wiggle shadow-lg text-center">
+          Смотреть меню
+        </a>
+        <a href="#contact" class="px-6 py-3 md:px-8 md:py-4 bg-transparent border-2 border-red-600 text-red-600 hover:bg-red-600 hover:text-white rounded-full text-lg md:text-xl font-semibold transition shadow-lg text-center">
+          Заказать звонок
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Преимущества -->
+  <section class="py-16 md:py-24 px-4 md:px-20 bg-gradient-to-b from-gray-900 to-black section-padding">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">Почему выбирают нас</h2>
+        <div class="w-24 h-1 bg-red-600 mx-auto"></div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="benefit-card bg-gray-800 rounded-2xl p-6 text-center">
+          <div class="text-4xl text-red-500 mb-4">
+            <i class="fas fa-fish"></i>
+          </div>
+          <h3 class="text-xl font-bold mb-2">Свежие ингредиенты</h3>
+          <p class="text-gray-400">Мы используем только свежайшие продукты и традиционные японские техники приготовления</p>
+        </div>
+        <div class="benefit-card bg-gray-800 rounded-2xl p-6 text-center">
+          <div class="text-4xl text-red-500 mb-4">
+            <i class="fas fa-shipping-fast"></i>
+          </div>
+          <h3 class="text-xl font-bold mb-2">Быстрая доставка</h3>
+          <p class="text-gray-400">Доставим ваш заказ в течение 45 минут в любую точку города</p>
+        </div>
+        <div class="benefit-card bg-gray-800 rounded-2xl p-6 text-center">
+          <div class="text-4xl text-red-500 mb-4">
+            <i class="fas fa-star"></i>
+          </div>
+          <h3 class="text-xl font-bold mb-2">172 блюда</h3>
+          <p class="text-gray-400">Широкий ассортимент роллов, суши, супов и десертов на любой вкус</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Акции -->
+  <section class="py-16 md:py-24 px-4 md:px-20 bg-gradient-to-b from-black to-gray-900 section-padding">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">Акции и новости</h2>
+        <div class="w-24 h-1 bg-red-600 mx-auto"></div>
+      </div>
+        <div class="promo-card bg-gray-800 rounded-2xl overflow-hidden">
+          <img src="https://tokyo-bar.ru/upload/iblock/c8b/3mmnt8itaj53cdve3dyhhh5kpncpvu98/SAI_T-_14_.jpg" alt="Кешбэк на первый заказ" class="w-full h-48 object-cover">
+          <div class="p-6">
+            <h3 class="text-xl font-bold mb-2">Кешбэк на первый заказ</h3>
+            <p class="text-gray-400 mb-4">Получите 10% кешбэка при первом заказе через сайт!</p>
+            <a href="#" class="text-red-500 hover:text-red-400 font-semibold">Подробнее →</a>
+          </div>
+        </div>
+        <div class="promo-card bg-gray-800 rounded-2xl overflow-hidden">
+          <img src="https://tokyo-bar.ru/upload/iblock/e1e/pf0jcov994totlhj4c0tqufctf7kiwbn/Desk_aktualno_10_.png" alt="Скидка на самовывоз" class="w-full h-48 object-cover">
+          <div class="p-6">
+            <h3 class="text-xl font-bold mb-2">Скидка на самовывоз</h3>
+            <p class="text-gray-400 mb-4">Получите 15% скидку при самовывозе заказа!</p>
+            <a href="#" class="text-red-500 hover:text-red-400 font-semibold">Подробнее →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Menu -->
+  <section id="menu" class="py-16 md:py-24 px-4 md:px-20 bg-gradient-to-b from-transparent to-black/20 section-padding">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center mb-12 md:mb-16">
+        <div class="mb-4">
+          <span class="text-sm tracking-[0.3em] text-yellow-300 uppercase font-light">メニュー</span>
+        </div>
+        <h2 class="text-3xl md:text-5xl lg:text-6xl font-light mb-4 md:mb-6 text-white">Наше меню</h2>
+        <div class="w-24 h-px bg-gradient-to-r from-transparent via-yellow-400 to-transparent mx-auto"></div>
+      </div>
+
+      <!-- Фильтры и сортировка как в маркетплейсе -->
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+        <div class="w-full md:w-auto">
+          <div class="category-filter-container">
+            <div class="category-filter scrollbar-hide">
+              <button class="category-btn active" data-category="all">Все</button>
+              <button class="category-btn" data-category="rolls">Роллы</button>
+              <button class="category-btn" data-category="soups">Супы</button>
+              <button class="category-btn" data-category="noodles">Лапша</button>
+              <button class="category-btn" data-category="hot">Горячее</button>
+              <button class="category-btn" data-category="sashimi">Сашими</button>
+              <button class="category-btn" data-category="sushi">Суши</button>
+              <button class="category-btn" data-category="salads">Салаты</button>
+              <button class="category-btn" data-category="desserts">Десерты</button>
+              <button class="category-btn" data-category="drinks">Напитки</button>
+              <button class="category-btn" data-category="snacks">Закуски</button>
+              <button class="category-btn" data-category="bento">Бенто</button>
+              <button class="category-btn" data-category="tempura">Темпура</button>
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center gap-3 w-full md:w-auto">
+          <select class="sort-filter text-sm w-full md:w-auto">
+            <option value="popular">По популярности</option>
+            <option value="price-asc">Сначала дешевые</option>
+            <option value="price-desc">Сначала дорогие</option>
+            <option value="new">Новинки</option>
+          </select>
+          <div class="relative">
+            <button id="cart-toggle" class="p-2 bg-gray-800 rounded-lg hover:bg-gray-700 transition">
+              <i class="fas fa-shopping-cart"></i>
+              <span class="item-counter">0</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-10 menu-grid">
+
+        <!-- 1 -->
+        <div class="bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:scale-105 transition duration-300 menu-item" data-category="rolls">
+          <div class="relative">
+            <img src="https://avatars.mds.yandex.net/i?id=8576130dcdd13973095d8c75482182f6e93a19df-4854935-images-thumbs&n=13" class="w-full h-48 md:h-52 object-cover" alt="Филадельфия">
+            <button class="absolute top-3 right-3 w-9 h-9 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center transition add-to-cart">
+              <i class="fas fa-plus text-white text-sm"></i>
+            </button>
+          </div>
+          <div class="p-4 md:p-6">
+            <h3 class="text-xl md:text-2xl font-semibold mb-2">Филадельфия</h3>
+            <p class="text-gray-300 mb-4 text-sm md:text-base">Лосось, сливочный сыр, авокадо, огурец. 8 шт., 250 г.</p>
+            <div class="flex justify-between items-center">
+              <span class="text-lg md:text-xl font-bold">490 ₽</span>
+              <button class="px-3 py-2 md:px-4 md:py-2 bg-red-600 rounded-lg hover:bg-red-700 transition text-sm md:text-base add-to-cart-btn">В корзину</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2 -->
+        <div class="bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:scale-105 transition duration-300 menu-item" data-category="rolls">
+          <div class="relative">
+            <img src="https://mir-s3-cdn-cf.behance.net/project_modules/max_3840/7431b582203759.5d1607ad5a3c2.jpg" class="w-full h-48 md:h-52 object-cover" alt="Сет Самурай">
+            <button class="absolute top-3 right-3 w-9 h-9 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center transition add-to-cart">
+              <i class="fas fa-plus text-white text-sm"></i>
+            </button>
+          </div>
+          <div class="p-4 md:p-6">
+            <h3 class="text-xl md:text-2xl font-semibold mb-2">Сет Самурай</h3>
+            <p class="text-gray-300 mb-4 text-sm md:text-base">30 шт.: Филадельфия, Калифорния, Темпура, Чиз ролл. 950 г.</p>
+            <div class="flex justify-between items-center">
+              <span class="text-lg md:text-xl font-bold">1390 ₽</span>
+              <button class="px-3 py-2 md:px-4 md:py-2 bg-red-600 rounded-lg hover:bg-red-700 transition text-sm md:text-base add-to-cart-btn">В корзину</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3 -->
+        <div class="bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:scale-105 transition duration-300 menu-item" data-category="noodles">
+          <div class="relative">
+            <img src="https://avatars.mds.yandex.net/i?id=b6eec287b79f84376c9500a1f5c064f76b435b24-10779221-images-thumbs&n=13" class="w-full h-48 md:h-52 object-cover" alt="Рамен">
+            <button class="absolute top-3 right-3 w-9 h-9 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center transition add-to-cart">
+              <i class="fas fa-plus text-white text-sm"></i>
+            </button>
+          </div>
+          <div class="p-4 md:p-6">
+            <h3 class="text-xl md:text-2xl font-semibold mb-2">Рамен</h3>
+            <p class="text-gray-300 mb-4 text-sm md:text-base">Куриный бульон, лапша, яйцо, нори, свинина Чашу. 400 г.</p>
+            <div class="flex justify-between items-center">
+              <span class="text-lg md:text-xl font-bold">450 ₽</span>
+              <button class="px-3 py-2 md:px-4 md:py-2 bg-red-600 rounded-lg hover:bg-red-700 transition text-sm md:text-base add-to-cart-btn">В корзину</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4 -->
+        <div class="bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:scale-105 transition duration-300 menu-item" data-category="soups">
+          <div class="relative">
+            <img src="https://avatars.mds.yandex.net/i?id=4e7cfdd02e83ebb1b54d9a6c7dfb98c3299dc9e9-16447530-images-thumbs&n=13" class="w-full h-48 md:h-52 object-cover" alt="Мисо суп">
+            <button class="absolute top-3 right-3 w-9 h-9 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center transition add-to-cart">
+              <i class="fas fa-plus text-white text-sm"></i>
+            </button>
+          </div>
+          <div class="p-4 md:p-6">
+            <h3 class="text-xl md:text-2xl font-semibold mb-2">Мисо суп</h3>
+            <p class="text-gray-300 mb-4 text-sm md:text-base">Тофу, вакаме, зеленый лук, бульон мисо. 250 мл.</p>
+            <div class="flex justify-between items-center">
+              <span class="text-lg md:text-xl font-bold">190 ₽</span>
+              <button class="px-3 py-2 md:px-4 md:py-2 bg-red-600 rounded-lg hover:bg-red-700 transition text-sm md:text-base add-to-cart-btn">В корзину</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5 -->
+        <div class="bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:scale-105 transition duration-300 menu-item" data-category="sashimi">
+          <div class="relative">
+            <img src="https://avatars.mds.yandex.net/i?id=cd6f8c1e01fbca2cc24618523660d7de2baa4230-4393404-images-thumbs&n=13" class="w-full h-48 md:h-52 object-cover" alt="Сашими">
+            <button class="absolute top-3 right-3 w-9 h-9 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center transition add-to-cart">
+              <i class="fas fa-plus text-white text-sm"></i>
+            </button>
+          </div>
+          <div class="p-4 md:p-6">
+            <h3 class="text-xl md:text-2xl font-semibold mb-2">Сашими</h3>
+            <p class="text-gray-300 mb-4 text-sm md:text-base">Свежий лосось, тунец и окунь. 150 г.</p>
+            <div class="flex justify-between items-center">
+              <span class="text-lg md:text-xl font-bold">560 ₽</span>
+              <button class="px-3 py-2 md:px-4 md:py-2 bg-red-600 rounded-lg hover:bg-red-700 transition text-sm md:text-base add-to-cart-btn">В корзину</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6 -->
+        <div class="bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:scale-105 transition duration-300 menu-item" data-category="rolls">
+          <div class="relative">
+            <img src="https://avatars.mds.yandex.net/i?id=caf9bf6fd0d01285b54773eba9f896601a5ef411-10636720-images-thumbs&n=13" class="w-full h-48 md:h-52 object-cover" alt="Темпура ролл">
+            <button class="absolute top-3 right-3 w-9 h-9 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center transition add-to-cart">
+              <i class="fas fa-plus text-white text-sm"></i>
+            </button>
+          </div>
+          <div class="p-4 md:p-6">
+            <h3 class="text-xl md:text-2xl font-semibold mb-2">Темпура ролл</h3>
+            <p class="text-gray-300 mb-4 text-sm md:text-base">Ролл с креветкой, сливочным сыром и авocado в хрустящей панировке. 8 шт.</p>
+            <div class="flex justify-between items-center">
+              <span class="text-lg md:text-xl font-bold">520 ₽</span>
+              <button class="px-3 py-2 md:px-4 md:py-2 bg-red-600 rounded-lg hover:bg-red-700 transition text-sm md:text-base add-to-cart-btn">В корзину</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 7 -->
+        <div class="bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:scale-105 transition duration-300 menu-item" data-category="sushi">
+          <div class="relative">
+            <img src="https://avatars.mds.yandex.net/i?id=10e7bba16e9f80fcf79a09ee3626bf6482a8dd53-4080640-images-thumbs&n=13" class="w-full h-48 md:h-52 object-cover" alt="Суши с креветкой">
+            <button class="absolute top-3 right-3 w-9 h-9 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center transition add-to-cart">
+              <i class="fas fa-plus text-white text-sm"></i>
+            </button>
+          </div>
+          <div class="p-4 md:p-6">
+            <h3 class="text-xl md:text-2xl font-semibold mb-2">Суши с креветкой</h3>
+            <p class="text-gray-300 mb-4 text-sm md:text-base">Тигровая креветка на рисе. 35 г.</p>
+            <div class="flex justify-between items-center">
+              <span class="text-lg md:text-xl font-bold">120 ₽</span>
+              <button class="px-3 py-2 md:px-4 md:py-2 bg-red-600 rounded-lg hover:bg-red-700 transition text-sm md:text-base add-to-cart-btn">В корзину</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 8 -->
+        <div class="bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:scale-105 transition duration-300 menu-item" data-category="rolls">
+          <div class="relative">
+            <img src="https://avatars.mds.yandex.net/i?id=660f8d24fc363d83c862bb2c48731682d886ed19-5286004-images-thumbs&n=13" class="w-full h-48 md:h-52 object-cover" alt="Калифорния">
+            <button class="absolute top-3 right-3 w-9 h-9 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center transition add-to-cart">
+              <i class="fas fa-plus text-white text-sm"></i>
+            </button>
+          </div>
+          <div class="p-4 md:p-6">
+            <h3 class="text-xl md:text-2xl font-semibold mb-2">Калифорния</h3>
+            <p class="text-gray-300 mb-4 text-sm md:text-base">Ролл с крабом, авокадо и огурцом в икре масаго. 8 шт.</p>
+            <div class="flex justify-between items-center">
+              <span class="text-lg md:text-xl font-bold">450 ₽</span>
+              <button class="px-3 py-2 md:px-4 md:py-2 bg-red-600 rounded-lg hover:bg-red-700 transition text-sm md:text-base add-to-cart-btn">В корзину</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 9 -->
+        <div class="bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:scale-105 transition duration-300 menu-item" data-category="noodles">
+          <div class="relative">
+            <img src="https://avatars.mds.yandex.net/i?id=f07b118cc925b8db7ba30212c4341952-5232807-images-thumbs&n=13" class="w-full h-48 md:h-52 object-cover" alt="Удон с курицей">
+            <button class="absolute top-3 right-3 w-9 h-9 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center transition add-to-cart">
+              <i class="fas fa-plus text-white text-sm"></i>
+            </button>
+          </div>
+          <div class="p-4 md:p-6">
+            <h3 class="text-xl md:text-2xl font-semibold mb-2">Удон с курицей</h3>
+            <p class="text-gray-300 mb-4 text-sm md:text-base">Пшеничная лапша, курица, овощи, соус терияки. 400 г.</p>
+            <div class="flex justify-between items-center">
+              <span class="text-lg md:text-xl font-bold">390 ₽</span>
+              <button class="px-3 py-2 md:px-4 md:py-2 bg-red-600 rounded-lg hover:bg-red-700 transition text-sm md:text-base add-to-cart-btn">В корзину</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 10 -->
+        <div class="bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:scale-105 transition duration-300 menu-item" data-category="hot">
+          <div class="relative">
+            <img src="https://avatars.mds.yandex.net/i?id=1ac0e823993851dcecc3015b7ee5a337adcb7c44-4055781-images-thumbs&n=13" class="w-full h-48 md:h-52 object-cover" alt="Гёдза">
+            <button class="absolute top-3 right-3 w-9 h-9 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center transition add-to-cart">
+              <i class="fas fa-plus text-white text-sm"></i>
+            </button>
+          </div>
+          <div class="p-4 md:p-6">
+            <h3 class="text-xl md:text-2xl font-semibold mb-2">Гёдза</h3>
+            <p class="text-gray-300 mb-4 text-sm md:text-base">Жареные японские пельмени с курицей и овощами. 6 шт.</p>
+            <div class="flex justify-between items-center">
+              <span class="text-lg md:text-xl font-bold">320 ₽</span>
+              <button class="px-3 py-2 md:px-4 md:py-2 bg-red-600 rounded-lg hover:bg-red-700 transition text-sm md:text-base add-to-cart-btn">В корзину</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 11 -->
+        <div class="bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:scale-105 transition duration-300 menu-item" data-category="rolls">
+          <div class="relative">
+            <img src="https://avatars.mds.yandex.net/i?id=ecf874f324dba6c4757687110bc21ef3db15a704-12421931-images-thumbs&n=13" class="w-full h-48 md:h-52 object-cover" alt="Ролл Дракон">
+            <button class="absolute top-3 right-3 w-9 h-9 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center transition add-to-cart">
+              <i class="fas fa-plus text-white text-sm"></i>
+            </button>
+          </div>
+          <div class="p-4 md:p-6">
+            <h3 class="text-xl md:text-2xl font-semibold mb-2">Ролл Дракон</h3>
+            <p class="text-gray-300 mb-4 text-sm md:text-base">Угорь, авокадо, огурец, соус унаги. 8 шт.</p>
+            <div class="flex justify-between items-center">
+              <span class="text-lg md:text-xl font-bold">620 ₽</span>
+              <button class="px-3 py-2 md:px-4 md:py-2 bg-red-600 rounded-lg hover:bg-red-700 transition text-sm md:text-base add-to-cart-btn">В корзину</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 12 -->
+        <div class="bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:scale-105 transition duration-300 menu-item" data-category="soups">
+          <div class="relative">
+            <img src="https://avatars.mds.yandex.net/i?id=d75b786a43139752c07160f9448ead68d66be0fe-12422696-images-thumbs&n=13" class="w-full h-48 md:h-52 object-cover" alt="Суп Том Ям">
+            <button class="absolute top-3 right-3 w-9 h-9 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center transition add-to-cart">
+              <i class="fas fa-plus text-white text-sm"></i>
+            </button>
+          </div>
+          <div class="p-4 md:p-6">
+            <h3 class="text-xl md:text-2xl font-semibold mb-2">Суп Том Ям</h3>
+            <p class="text-gray-300 mb-4 text-sm md:text-base">Креветки, грибы, кокосовое молоко, лайм. 300 мл.</p>
+            <div class="flex justify-between items-center">
+              <span class="text-lg md:text-xl font-bold">490 ₽</span>
+              <button class="px-3 py-2 md:px-4 md:py-2 bg-red-600 rounded-lg hover:bg-red-700 transition text-sm md:text-base add-to-cart-btn">В корзину</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 13 -->
+        <div class="bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:scale-105 transition duration-300 menu-item" data-category="rolls">
+          <div class="relative">
+            <img src="https://avatars.mds.yandex.net/i?id=d3857d011ebd42b0a781739f00934cb94e41fabd-4146380-images-thumbs&n=13" class="w-full h-48 md:h-52 object-cover" alt="Чиз ролл">
+            <button class="absolute top-3 right-3 w-9 h-9 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center transition add-to-cart">
+              <i class="fas fa-plus text-white text-sm"></i>
+            </button>
+          </div>
+          <div class="p-4 md:p-6">
+            <h3 class="text-xl md:text-2xl font-semibold mb-2">Чиз ролл</h3>
+            <p class="text-gray-300 mb-4 text-sm md:text-base">Сливочный сыр, огурец, лосось. 8 шт.</p>
+            <div class="flex justify-between items-center">
+              <span class="text-lg md:text-xl font-bold">410 ₽</span>
+              <button class="px-3 py-2 md:px-4 md:py-2 bg-red-600 rounded-lg hover:bg-red-700 transition text-sm md:text-base add-to-cart-btn">В корзину</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 14 -->
+        <div class="bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:scale-105 transition duration-300 menu-item" data-category="salads">
+          <div class="relative">
+            <img src="https://avatars.mds.yandex.net/i?id=78b9d5efe22b994cf2ff583e0a7f2814f6e89d25ff73da32-9864474-images-thumbs&n=13" class="w-full h-48 md:h-52 object-cover" alt="Салат Чука">
+            <button class="absolute top-3 right-3 w-9 h-9 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center transition add-to-cart">
+              <i class="fas fa-plus text-white text-sm"></i>
+            </button>
+          </div>
+          <div class="p-4 md:p-6">
+            <h3 class="text-xl md:text-2xl font-semibold mb-2">Салат Чука</h3>
+            <p class="text-gray-300 mb-4 text-sm md:text-base">Морские водоросли чука, ореховый соус. 150 г.</p>
+            <div class="flex justify-between items-center">
+              <span class="text-lg md:text-xl font-bold">270 ₽</span>
+              <button class="px-3 py-2 md:px-4 md:py-2 bg-red-600 rounded-lg hover:bg-red-700 transition text-sm md:text-base add-to-cart-btn">В корзину</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 15 -->
+        <div class="bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:scale-105 transition duration-300 menu-item" data-category="desserts">
+          <div class="relative">
+            <img src="https://scdn.chibbis.ru/live/products/31e00d33f368fb59b52b4b59bc422a9d.jpeg" class="w-full h-48 md:h-52 object-cover" alt="Моти">
+            <button class="absolute top-3 right-3 w-9 h-9 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center transition add-to-cart">
+              <i class="fas fa-plus text-white text-sm"></i>
+            </button>
+          </div>
+          <div class="p-4 md:p-6">
+            <h3 class="text-xl md:text-2xl font-semibold mb-2">Моти</h3>
+            <p class="text-gray-300 mb-4 text-sm md:text-base">Традиционный японский десерт из рисовой муки с начинкой. 3 шт.</p>
+            <div class="flex justify-between items-center">
+              <span class="text-lg md:text-xl font-bold">250 ₽</span>
+              <button class="px-3 py-2 md:px-4 md:py-2 bg-red-600 rounded-lg hover:bg-red-700 transition text-sm md:text-base add-to-cart-btn">В корзину</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 16 -->
+        <div class="bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:scale-105 transition duration-300 menu-item" data-category="drinks">
+          <div class="relative">
+            <img src="https://avatars.mds.yandex.net/i?id=4e7cfdd02e83ebb1b54d9a6c7dfb98c3299dc9e9-16447530-images-thumbs&n=13" class="w-full h-48 md:h-52 object-cover" alt="Зеленый чай">
+            <button class="absolute top-3 right-3 w-9 h-9 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center transition add-to-cart">
+              <i class="fas fa-plus text-white text-sm"></i>
+            </button>
+          </div>
+          <div class="p-4 md:p-6">
+            <h3 class="text-xl md:text-2xl font-semibold mb-2">Зеленый чай</h3>
+            <p class="text-gray-300 mb-4 text-sm md:text-base">Свежезаваренный японский зеленый чай. 300 мл.</p>
+            <div class="flex justify-between items-center">
+              <span class="text-lg md:text-xl font-bold">150 ₽</span>
+              <button class="px-3 py-2 md:px-4 md:py-2 bg-red-600 rounded-lg hover:bg-red-700 transition text-sm md:text-base add-to-cart-btn">В корзину</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 17 -->
+        <div class="bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:scale-105 transition duration-300 menu-item" data-category="drinks">
+          <div class="relative">
+            <img src="https://avatars.mds.yandex.net/i?id=b6eec287b79f84376c9500a1f5c064f76b435b24-10779221-images-thumbs&n=13" class="w-full h-48 md:h-52 object-cover" alt="Саке">
+            <button class="absolute top-3 right-3 w-9 h-9 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center transition add-to-cart">
+              <i class="fas fa-plus text-white text-sm"></i>
+            </button>
+          </div>
+          <div class="p-4 md:p-6">
+            <h3 class="text-xl md:text-2xl font-semibold mb-2">Саке</h3>
+            <p class="text-gray-300 mb-4 text-sm md:text-base">Традиционный японский рисовый алкогольный напиток. 150 мл.</p>
+            <div class="flex justify-between items-center">
+              <span class="text-lg md:text-xl font-bold">350 ₽</span>
+              <button class="px-3 py-2 md:px-4 md:py-2 bg-red-600 rounded-lg hover:bg-red-700 transition text-sm md:text-base add-to-cart-btn">В корзину</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 18 -->
+        <div class="bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:scale-105 transition duration-300 menu-item" data-category="snacks">
+          <div class="relative">
+            <img src="https://avatars.mds.yandex.net/i?id=1ac0e823993851dcecc3015b7ee5a337adcb7c44-4055781-images-thumbs&n=13" class="w-full h-48 md:h-52 object-cover" alt="Эби темпура">
+            <button class="absolute top-3 right-3 w-9 h-9 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center transition add-to-cart">
+              <i class="fas fa-plus text-white text-sm"></i>
+            </button>
+          </div>
+          <div class="p-4 md:p-6">
+            <h3 class="text-xl md:text-2xl font-semibold mb-2">Эби темпура</h3>
+            <p class="text-gray-300 mb-4 text-sm md:text-base">Обжаренные в кляре креветки. 5 шт.</p>
+            <div class="flex justify-between items-center">
+              <span class="text-lg md:text-xl font-bold">280 ₽</span>
+              <button class="px-3 py-2 md:px-4 md:py-2 bg-red-600 rounded-lg hover:bg-red-700 transition text-sm md:text-base add-to-cart-btn">В корзину</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 19 -->
+        <div class="bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:scale-105 transition duration-300 menu-item" data-category="snacks">
+          <div class="relative">
+            <img src="data:image/jpeg;base64,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" class="w-full h-48 md:h-52 object-cover" alt="Картофель фри">
+            <button class="absolute top-3 right-3 w-9 h-9 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center transition add-to-cart">
+              <i class="fas fa-plus text-white text-sm"></i>
+            </button>
+          </div>
+          <div class="p-4 md:p-6">
+            <h3 class="text-xl md:text-2xl font-semibold mb-2">Картофель фри</h3>
+            <p class="text-gray-300 mb-4 text-sm md:text-base">Хрустящий картофель фри с соусом васаби. 150 г.</p>
+            <div class="flex justify-between items-center">
+              <span class="text-lg md:text-xl font-bold">180 ₽</span>
+              <button class="px-3 py-2 md:px-4 md:py-2 bg-red-600 rounded-lg hover:bg-red-700 transition text-sm md:text-base add-to-cart-btn">В корзину</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 20 -->
+        <div class="bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:scale-105 transition duration-300 menu-item" data-category="desserts">
+          <div class="relative">
+            <img src="data:image/jpeg;base64,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" class="w-full h-48 md:h-52 object-cover" alt="Чизкейк">
+            <button class="absolute top-3 right-3 w-9 h-9 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center transition add-to-cart">
+              <i class="fas fa-plus text-white text-sm"></i>
+            </button>
+          </div>
+          <div class="p-4 md:p-6">
+            <h3 class="text-xl md:text-2xl font-semibold mb-2">Чизкейк</h3>
+            <p class="text-gray-300 mb-4 text-sm md:text-base">Классический нью-йорк чизкейк с ягодным соусом. 120 г.</p>
+            <div class="flex justify-between items-center">
+              <span class="text-lg md:text-xl font-bold">320 ₽</span>
+              <button class="px-3 py-2 md:px-4 md:py-2 bg-red-600 rounded-lg hover:bg-red-700 transition text-sm md:text-base add-to-cart-btn">В корзину</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 23 -->
+        <div class="bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:scale-105 transition duration-300 menu-item" data-category="noodles">
+          <div class="relative">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRzgQ_8cCs-6qCd0fCPFVd-NkxlTzr4L79zAw&s" class="w-full h-48 md:h-52 object-cover" alt="Соба">
+            <button class="absolute top-3 right-3 w-9 h-9 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center transition add-to-cart">
+              <i class="fas fa-plus text-white text-sm"></i>
+            </button>
+          </div>
+          <div class="p-4 md:p-6">
+            <h3 class="text-xl md:text-2xl font-semibold mb-2">Соба</h3>
+            <p class="text-gray-300 mb-4 text-sm md:text-base">Гречневая лапша с овощами и соусом цуя. 350 г.</p>
+            <div class="flex justify-between items-center">
+              <span class="text-lg md:text-xl font-bold">380 ₽</span>
+              <button class="px-3 py-2 md:px-4 md:py-2 bg-red-600 rounded-lg hover:bg-red-700 transition text-sm md:text-base add-to-cart-btn">В корзину</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 25 -->
+        <div class="bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:scale-105 transition duration-300 menu-item" data-category="salads">
+          <div class="relative">
+            <img src="https://tokyo-bar.ru/upload/iblock/5a2/5a2c7b1f0a0a0a0a0a0a0a0a0a0a0a0a/seaweed_salad.jpg" class="w-full h-48 md:h-52 object-cover" alt="Салат из водорослей">
+            <button class="absolute top-3 right-3 w-9 h-9 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center transition add-to-cart">
+              <i class="fas fa-plus text-white text-sm"></i>
+            </button>
+          </div>
+          <div class="p-4 md:p-6">
+            <h3 class="text-xl md:text-2xl font-semibold mb-2">Салат из водорослей</h3>
+            <p class="text-gray-300 mb-4 text-sm md:text-base">Свежие водоросли с кунжутом и соусом васаби. 120 г.</p>
+            <div class="flex justify-between items-center">
+              <span class="text-lg md:text-xl font-bold">220 ₽</span>
+              <button class="px-3 py-2 md:px-4 md:py-2 bg-red-600 rounded-lg hover:bg-red-700 transition text-sm md:text-base add-to-cart-btn">В корзину</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 26 -->
+        <div class="bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:scale-105 transition duration-300 menu-item" data-category="soups">
+          <div class="relative">
+            <img src="https://tokyo-bar.ru/upload/iblock/491/491c7b1f0a0a0a0a0a0a0a0a0a0a0a0a/miso_soup_with_tofu.jpg" class="w-full h-48 md:h-52 object-cover" alt="Мисо суп с тофу">
+            <button class="absolute top-3 right-3 w-9 h-9 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center transition add-to-cart">
+              <i class="fas fa-plus text-white text-sm"></i>
+            </button>
+          </div>
+          <div class="p-4 md:p-6">
+            <h3 class="text-xl md:text-2xl font-semibold mb-2">Мисо суп с тофу</h3>
+            <p class="text-gray-300 mb-4 text-sm md:text-base">Традиционный японский суп с тофу и вакаме. 300 мл.</p>
+            <div class="flex justify-between items-center">
+              <span class="text-lg md:text-xl font-bold">210 ₽</span>
+              <button class="px-3 py-2 md:px-4 md:py-2 bg-red-600 rounded-lg hover:bg-red-700 transition text-sm md:text-base add-to-cart-btn">В корзину</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 27 -->
+        <div class="bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:scale-105 transition duration-300 menu-item" data-category="desserts">
+          <div class="relative">
+            <img src="https://tokyo-bar.ru/upload/iblock/380/380c7b1f0a0a0a0a0a0a0a0a0a0a0a0a/mochi_ice_cream.jpg" class="w-full h-48 md:h-52 object-cover" alt="Мочи с мороженым">
+            <button class="absolute top-3 right-3 w-9 h-9 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center transition add-to-cart">
+              <i class="fas fa-plus text-white text-sm"></i>
+            </button>
+          </div>
+          <div class="p-4 md:p-6">
+            <h3 class="text-xl md:text-2xl font-semibold mb-2">Мочи с мороженым</h3>
+            <p class="text-gray-300 mb-4 text-sm md:text-base">Традиционные японские десерты с мороженым. 3 шт.</p>
+            <div class="flex justify-between items-center">
+              <span class="text-lg md:text-xl font-bold">280 ₽</span>
+              <button class="px-3 py-2 md:px-4 md:py-2 bg-red-600 rounded-lg hover:bg-red-700 transition text-sm md:text-base add-to-cart-btn">В корзину</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 28 -->
+        <div class="bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:scale-105 transition duration-300 menu-item" data-category="drinks">
+          <div class="relative">
+            <img src="https://tokyo-bar.ru/upload/iblock/26f/26fc7b1f0a0a0a0a0a0a0a0a0a0a0a0a/ramune_soda.jpg" class="w-full h-48 md:h-52 object-cover" alt="Рамунэ">
+            <button class="absolute top-3 right-3 w-9 h-9 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center transition add-to-cart">
+              <i class="fas fa-plus text-white text-sm"></i>
+            </button>
+          </div>
+          <div class="p-4 md:p-6">
+            <h3 class="text-xl md:text-2xl font-semibold mb-2">Рамунэ</h3>
+            <p class="text-gray-300 mb-4 text-sm md:text-base">Традиционная японская газировка с мраморным вкусом. 330 мл.</p>
+            <div class="flex justify-between items-center">
+              <span class="text-lg md:text-xl font-bold">180 ₽</span>
+              <button class="px-3 py-2 md:px-4 md:py-2 bg-red-600 rounded-lg hover:bg-red-700 transition text-sm md:text-base add-to-cart-btn">В корзину</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 29 -->
+        <div class="bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:scale-105 transition duration-300 menu-item" data-category="bento">
+          <div class="relative">
+            <img src="https://tokyo-bar.ru/upload/iblock/15e/15ec7b1f0a0a0a0a0a0a0a0a0a0a0a0a/children_bento.jpg" class="w-full h-48 md:h-52 object-cover" alt="Детское бенто">
+            <button class="absolute top-3 right-3 w-9 h-9 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center transition add-to-cart">
+              <i class="fas fa-plus text-white text-sm"></i>
+            </button>
+          </div>
+          <div class="p-4 md:p-6">
+            <h3 class="text-xl md:text-2xl font-semibold mb-2">Детское бенто</h3>
+            <p class="text-gray-300 mb-4 text-sm md:text-base">Маленький бенто для детей с любимыми блюдами. 350 г.</p>
+            <div class="flex justify-between items-center">
+              <span class="text-lg md:text-xl font-bold">450 ₽</span>
+              <button class="px-3 py-2 md:px-4 md:py-2 bg-red-600 rounded-lg hover:bg-red-700 transition text-sm md:text-base add-to-cart-btn">В корзину</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 30 -->
+        <div class="bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:scale-105 transition duration-300 menu-item" data-category="hot">
+          <div class="relative">
+            <img src="https://tokyo-bar.ru/upload/iblock/04d/04dc7b1f0a0a0a0a0a0a0a0a0a0a0a0a/beef_bulgogi.jpg" class="w-full h-48 md:h-52 object-cover" alt="Говядина булгоги">
+            <button class="absolute top-3 right-3 w-9 h-9 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center transition add-to-cart">
+              <i class="fas fa-plus text-white text-sm"></i>
+            </button>
+          </div>
+          <div class="p-4 md:p-6">
+            <h3 class="text-xl md:text-2xl font-semibold mb-2">Говядина булгоги</h3>
+            <p class="text-gray-300 mb-4 text-sm md:text-base">Маринованная говядина с овощами и рисом. 450 г.</p>
+            <div class="flex justify-between items-center">
+              <span class="text-lg md:text-xl font-bold">620 ₽</span>
+              <button class="px-3 py-2 md:px-4 md:py-2 bg-red-600 rounded-lg hover:bg-red-700 transition text-sm md:text-base add-to-cart-btn">В корзину</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- О нас -->
+  <section id="about" class="py-16 md:py-24 px-4 md:px-20 bg-gradient-to-b from-black to-gray-900 section-padding">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">О нас</h2>
+        <div class="w-24 h-1 bg-red-600 mx-auto"></div>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <div>
+          <h3 class="text-2xl font-bold mb-4">Добро пожаловать в Sakura Sushi</h3>
+          <p class="text-gray-400 mb-6">
+            Наша история началась с любви к японской кухне и стремления подарить нашим клиентам 
+            неповторимый вкус настоящих суши и роллов. Мы используем только свежайшие ингредиенты 
+            и традиционные японские техники приготовления.
+          </p>
+          <p class="text-gray-400 mb-6">
+            Каждый день мы тщательно отбираем рыбу, рис и специи, чтобы создать блюда, которые 
+            будут радовать ваш вкус и оставаться в памяти надолго. Наша команда профессиональных 
+            сушефов и поваров готовит с душой и страстью.
+          </p>
+          <div class="flex items-center space-x-4">
+            <div class="flex items-center text-yellow-400">
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+            </div>
+            <span class="text-gray-400">4.9 из 5 звезд</span>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <img src="https://avatars.mds.yandex.net/i?id=7a3d05130f17ca47ef1dad0c28fc6eebf3af5b12-4290022-images-thumbs&n=13" alt="Интерьер" class="rounded-2xl w-full h-64 object-cover">
+          <img src="https://avatars.mds.yandex.net/i?id=8576130dcdd13973095d8c75482182f6e93a19df-4854935-images-thumbs&n=13" alt="Блюдо" class="rounded-2xl w-full h-64 object-cover mt-8">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Доставка -->
+  <section id="delivery" class="py-16 md:py-24 px-4 md:px-20 bg-gradient-to-b from-gray-900 to-black section-padding">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">Доставка и оплата</h2>
+        <div class="w-24 h-1 bg-red-600 mx-auto"></div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+        <div>
+          <h3 class="text-2xl font-bold mb-6">Условия доставки</h3>
+          <ul class="space-y-4">
+            <li class="flex items-start">
+              <div class="text-red-500 mr-3 mt-1">
+                <i class="fas fa-check-circle"></i>
+              </div>
+              <div>
+                <h4 class="font-bold">Зона доставки</h4>
+                <p class="text-gray-400">В пределах КАД и до 5 км за КАД</p>
+              </div>
+            </li>
+            <li class="flex items-start">
+              <div class="text-red-500 mr-3 mt-1">
+                <i class="fas fa-check-circle"></i>
+              </div>
+              <div>
+                <h4 class="font-bold">Срок доставки</h4>
+                <p class="text-gray-400">45 минут в будние дни, 60 минут в выходные</p>
+              </div>
+            </li>
+            <li class="flex items-start">
+              <div class="text-red-500 mr-3 mt-1">
+                <i class="fas fa-check-circle"></i>
+              </div>
+              <div>
+                <h4 class="font-bold">Минимальная сумма заказа</h4>
+                <p class="text-gray-400">900 ₽</p>
+              </div>
+            </li>
+            <li class="flex items-start">
+              <div class="text-red-500 mr-3 mt-1">
+                <i class="fas fa-check-circle"></i>
+              </div>
+              <div>
+                <h4 class="font-bold">Стоимость доставки</h4>
+                <p class="text-gray-400">Бесплатно при заказе от 1500 ₽, иначе 150 ₽</p>
+              </div>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="text-2xl font-bold mb-6">Способы оплаты</h3>
+          <ul class="space-y-4">
+            <li class="flex items-start">
+              <div class="text-red-500 mr-3 mt-1">
+                <i class="fas fa-wallet"></i>
+              </div>
+              <div>
+                <h4 class="font-bold">Наличными</h4>
+                <p class="text-gray-400">Оплата при получении заказа курьеру</p>
+              </div>
+            </li>
+            <li class="flex items-start">
+              <div class="text-red-500 mr-3 mt-1">
+                <i class="fab fa-cc-visa"></i>
+              </div>
+              <div>
+                <h4 class="font-bold">Банковской картой</h4>
+                <p class="text-gray-400">Оплата курьеру или онлайн на сайте</p>
+              </div>
+            </li>
+            <li class="flex items-start">
+              <div class="text-red-500 mr-3 mt-1">
+                <i class="fas fa-mobile-alt"></i>
+              </div>
+              <div>
+                <h4 class="font-bold">Электронные кошельки</h4>
+                <p class="text-gray-400">Оплата через Apple Pay, Google Pay, Samsung Pay</p>
+              </div>
+            </li>
+            <li class="flex items-start">
+              <div class="text-red-500 mr-3 mt-1">
+                <i class="fas fa-building"></i>
+              </div>
+              <div>
+                <h4 class="font-bold">Безналичный расчет</h4>
+                <p class="text-gray-400">Для юридических лиц (по запросу)</p>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Контакты -->
+  <section id="contact" class="py-16 md:py-24 px-4 md:px-20 bg-gradient-to-b from-black to-gray-900 section-padding">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">Контакты</h2>
+        <div class="w-24 h-1 bg-red-600 mx-auto"></div>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <div>
+          <h3 class="text-2xl font-bold mb-6">Наши контакты</h3>
+          <div class="space-y-6">
+            <div class="flex items-start">
+              <div class="text-red-500 text-2xl mr-4 mt-1">
+                <i class="fas fa-map-marker-alt"></i>
+              </div>
+              <div>
+                <h4 class="font-bold text-lg">Адрес</h4>
+                <p class="text-gray-400">г. Владивосток, ул. Светланская, 42</p>
+              </div>
+            </div>
+            <div class="flex items-start">
+              <div class="text-red-500 text-2xl mr-4 mt-1">
+                <i class="fas fa-phone-alt"></i>
+              </div>
+              <div>
+                <h4 class="font-bold text-lg">Телефон</h4>
+                <p class="text-gray-400">+7 (423) 200-12-34</p>
+              </div>
+            </div>
+            <div class="flex items-start">
+              <div class="text-red-500 text-2xl mr-4 mt-1">
+                <i class="fas fa-envelope"></i>
+              </div>
+              <div>
+                <h4 class="font-bold text-lg">Email</h4>
+                <p class="text-gray-400">info@sakurasushi.ru</p>
+              </div>
+            </div>
+            <div class="flex items-start">
+              <div class="text-red-500 text-2xl mr-4 mt-1">
+                <i class="fas fa-clock"></i>
+              </div>
+              <div>
+                <h4 class="font-bold text-lg">Часы работы</h4>
+                <p class="text-gray-400">Пн-Вс: 10:00 - 23:00</p>
+              </div>
+            </div>
+          </div>
+          <div class="mt-8">
+            <h4 class="font-bold text-lg mb-4">Мы в социальных сетях</h4>
+            <div class="flex space-x-4">
+              <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-red-600 transition">
+                <i class="fab fa-instagram"></i>
+              </a>
+              <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-red-600 transition">
+                <i class="fab fa-vk"></i>
+              </a>
+              <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-red-600 transition">
+                <i class="fab fa-telegram"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+        <div class="bg-gray-800 rounded-2xl p-6">
+          <h3 class="text-2xl font-bold mb-6">Обратная связь</h3>
+          <form class="space-y-4">
+            <div>
+              <input type="text" placeholder="Ваше имя" class="w-full px-4 py-3 bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600 text-white">
+            </div>
+            <div>
+              <input type="email" placeholder="Ваш email" class="w-full px-4 py-3 bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600 text-white">
+            </div>
+            <div>
+              <textarea placeholder="Ваше сообщение" rows="5" class="w-full px-4 py-3 bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600 text-white"></textarea>
+            </div>
+            <button type="submit" class="w-full px-6 py-3 bg-red-600 hover:bg-red-700 rounded-lg font-semibold transition">
+              Отправить сообщение
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="py-12 md:py-16 px-4 md:px-20 bg-black">
+    <div class="max-w-7xl mx-auto">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div>
+          <h3 class="text-xl font-bold text-red-500 mb-4">Sakura Sushi</h3>
+          <p class="text-gray-400">
+            Лучшие суши и роллы во Владивостоке. Свежие ингредиенты, быстрая доставка.
+          </p>
+        </div>
+        <div>
+          <h4 class="font-bold mb-4">Информация</h4>
+          <ul class="space-y-2 text-gray-400">
+            <li><a href="#about" class="hover:text-white transition">О нас</a></li>
+            <li><a href="#delivery" class="hover:text-white transition">Доставка</a></li>
+            <li><a href="#" class="hover:text-white transition">Акции</a></li>
+            <li><a href="#" class="hover:text-white transition">Вакансии</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-bold mb-4">Клиентам</h4>
+          <ul class="space-y-2 text-gray-400">
+            <li><a href="#" class="hover:text-white transition">Часто задаваемые вопросы</a></li>
+            <li><a href="#" class="hover:text-white transition">Как сделать заказ</a></li>
+            <li><a href="#" class="hover:text-white transition">Программа лояльности</a></li>
+            <li><a href="#" class="hover:text-white transition">Отзывы</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-bold mb-4">Контакты</h4>
+          <ul class="space-y-2 text-gray-400">
+            <li class="flex items-center">
+              <i class="fas fa-map-marker-alt mr-2"></i>
+              <span>г. Владивосток, ул. Светланская, 42</span>
+            </li>
+            <li class="flex items-center">
+              <i class="fas fa-phone-alt mr-2"></i>
+              <span>+7 (423) 200-12-34</span>
+            </li>
+            <li class="flex items-center">
+              <i class="fas fa-envelope mr-2"></i>
+              <span>info@sakurasushi.ru</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="border-t border-gray-800 mt-12 pt-8 text-center text-gray-500">
+        <p>&copy; 2023 Sakura Sushi. Все права защищены.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Корзина -->
+  <div class="cart-overlay" id="cart-overlay"></div>
+  <div class="cart-container" id="cart-container">
+    <div class="cart-header">
+      <h3 class="text-xl font-bold">Ваша корзина</h3>
+      <button id="cart-close" class="text-gray-400 hover:text-white">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="cart-body" id="cart-body">
+      <!-- Товары в корзине будут добавляться сюда -->
+      <div class="text-center py-10 text-gray-500" id="cart-empty">
+        <i class="fas fa-shopping-cart text-4xl mb-4"></i>
+        <p>Ваша корзина пуста</p>
+      </div>
+    </div>
+    <div class="cart-footer">
+      <div class="cart-total">
+        <span>Итого:</span>
+        <span id="cart-total-price">0 ₽</span>
+      </div>
+      <button class="checkout-btn" id="checkout-btn">Оформить заказ</button>
+    </div>
+  </div>
+
+  <!-- Форма оформления заказа -->
+  <div class="checkout-form" id="checkout-form">
+    <div class="checkout-form-container">
+      <h2 class="text-2xl font-bold mb-6">Оформление заказа</h2>
+      <form id="order-form">
+        <div class="form-group">
+          <label for="customer-name">Имя *</label>
+          <input type="text" id="customer-name" name="customer-name" required>
+        </div>
+        <div class="form-group">
+          <label for="customer-phone">Телефон *</label>
+          <input type="tel" id="customer-phone" name="customer-phone" required>
+        </div>
+        <div class="form-group">
+          <label for="customer-email">Email</label>
+          <input type="email" id="customer-email" name="customer-email">
+        </div>
+        <div class="form-group">
+          <label for="delivery-address">Адрес доставки *</label>
+          <textarea id="delivery-address" name="delivery-address" rows="3" required></textarea>
+        </div>
+        <div class="form-group">
+          <label for="delivery-time">Время доставки</label>
+          <select id="delivery-time" name="delivery-time">
+            <option value="asap">Как можно скорее</option>
+            <option value="12:00">12:00</option>
+            <option value="13:00">13:00</option>
+            <option value="14:00">14:00</option>
+            <option value="15:00">15:00</option>
+            <option value="16:00">16:00</option>
+            <option value="17:00">17:00</option>
+            <option value="18:00">18:00</option>
+            <option value="19:00">19:00</option>
+            <option value="20:00">20:00</option>
+            <option value="21:00">21:00</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="order-comment">Комментарий к заказу</label>
+          <textarea id="order-comment" name="order-comment" rows="3"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="payment-method">Способ оплаты *</label>
+          <select id="payment-method" name="payment-method" required>
+            <option value="cash">Наличные</option>
+            <option value="card-courier">Карта курьеру</option>
+            <option value="card-online">Карта онлайн</option>
+          </select>
+        </div>
+        <div class="flex justify-between mt-6">
+          <button type="button" id="cancel-order" class="px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-600 transition">
+            Отмена
+          </button>
+          <button type="submit" class="px-4 py-2 bg-red-600 rounded-lg hover:bg-red-700 transition">
+            Подтвердить заказ
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Chat Toggle Button -->
+  <div class="chat-toggle" id="chat-toggle-btn">
+    <i class="fas fa-comment-dots text-2xl"></i>
+  </div>
+
+  <!-- Chat Container -->
+  <div class="chat-container" id="chat-container">
+    <div class="chat-header" id="chat-header">
+      <span class="font-bold">AI-Консультант</span>
+      <i class="fas fa-times"></i>
+    </div>
+    <div class="chat-body" id="chat-body">
+      <div class="message bot">
+        <div class="message-content">
+          Привет! Я ваш личный AI-консультант. Могу помочь с выбором блюд, рассказать о составе и подсказать по доставке. О чём хотите узнать?
+        </div>
+      </div>
+    </div>
+    <div class="chat-input-container">
+      <input type="text" class="chat-input" id="chat-input" placeholder="Введите сообщение...">
+      <button class="chat-send-btn" id="chat-send">
+        <i class="fas fa-paper-plane"></i>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // Корзина
+    let cart = [];
+
+    // Функция для обновления корзины
+    function updateCart() {
+      const cartBody = document.getElementById('cart-body');
+      const cartTotalPrice = document.getElementById('cart-total-price');
+      const cartEmpty = document.getElementById('cart-empty');
+      const itemCounter = document.querySelector('.item-counter');
+      
+      // Обновляем счетчик товаров
+      const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
+      itemCounter.textContent = totalItems;
+      
+      // Если корзина пуста
+      if (cart.length === 0) {
+        cartBody.innerHTML = '<div class="text-center py-10 text-gray-500" id="cart-empty"><i class="fas fa-shopping-cart text-4xl mb-4"></i><p>Ваша корзина пуста</p></div>';
+        cartTotalPrice.textContent = '0 ₽';
+        return;
+      }
+      
+      // Очищаем корзину
+      cartBody.innerHTML = '';
+      
+      // Добавляем товары в корзину
+      let totalPrice = 0;
+      cart.forEach((item, index) => {
+        const itemTotal = item.price * item.quantity;
+        totalPrice += itemTotal;
+        
+        const cartItem = document.createElement('div');
+        cartItem.className = 'cart-item';
+        cartItem.innerHTML = `
+          <div class="cart-item-info">
+            <h4 class="font-bold">${item.title}</h4>
+          </div>
+          <div class="cart-item-price">${item.price} ₽</div>
+          <div class="cart-item-quantity">
+            <button class="quantity-btn decrease-quantity" data-index="${index}">-</button>
+            <span class="quantity-value">${item.quantity}</span>
+            <button class="quantity-btn increase-quantity" data-index="${index}">+</button>
+          </div>
+          <div class="cart-item-price">${itemTotal} ₽</div>
+          <div class="remove-item" data-index="${index}">
+            <i class="fas fa-trash"></i>
+          </div>
+        `;
+        cartBody.appendChild(cartItem);
+      });
+      
+      // Обновляем итоговую сумму
+      cartTotalPrice.textContent = `${totalPrice} ₽`;
+      
+      // Добавляем обработчики событий для кнопок
+      document.querySelectorAll('.decrease-quantity').forEach(button => {
+        button.addEventListener('click', () => {
+          const index = parseInt(button.getAttribute('data-index'));
+          if (cart[index].quantity > 1) {
+            cart[index].quantity--;
+          } else {
+            cart.splice(index, 1);
+          }
+          updateCart();
+        });
+      });
+      
+      document.querySelectorAll('.increase-quantity').forEach(button => {
+        button.addEventListener('click', () => {
+          const index = parseInt(button.getAttribute('data-index'));
+          cart[index].quantity++;
+          updateCart();
+        });
+      });
+      
+      document.querySelectorAll('.remove-item').forEach(button => {
+        button.addEventListener('click', () => {
+          const index = parseInt(button.getAttribute('data-index'));
+          cart.splice(index, 1);
+          updateCart();
+        });
+      });
+    }
+
+    // Функция для добавления товара в корзину
+    function addToCart(title, price) {
+      // Проверяем, есть ли уже такой товар в корзине
+      const existingItem = cart.find(item => item.title === title);
+      
+      if (existingItem) {
+        existingItem.quantity++;
+      } else {
+        cart.push({
+          title: title,
+          price: price,
+          quantity: 1
+        });
+      }
+      
+      updateCart();
+      
+      // Показываем уведомление
+      pushBot("Добавил в корзину: " + title + ". Хотите оформить? Напишите телефон и адрес.");
+    }
+
+    // Фильтрация по категориям
+    const categoryButtons = document.querySelectorAll('.category-btn');
+    const menuItems = document.querySelectorAll('.menu-item');
+    
+    categoryButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const category = button.getAttribute('data-category');
+        
+        // Убираем активный класс у всех кнопок и добавляем текущей
+        categoryButtons.forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+        
+        // Показываем/скрываем элементы меню в зависимости от категории
+        menuItems.forEach(item => {
+          if (category === 'all' || item.getAttribute('data-category') === category) {
+            item.style.display = 'block';
+          } else {
+            item.style.display = 'none';
+          }
+        });
+      });
+    });
+    
+    // Обработка добавления в корзину
+    document.addEventListener('click', (e) => {
+      if (e.target.classList.contains('add-to-cart') || e.target.classList.contains('add-to-cart-btn')) {
+        const card = e.target.closest('.menu-item');
+        const title = card.querySelector('h3').textContent.trim();
+        const price = Number(card.querySelector('span.font-bold').textContent.replace(/[^0-9]/g, ''));
+        
+        addToCart(title, price);
+        
+        // Анимация добавления в корзину
+        const addedItem = e.target.closest('.menu-item');
+        addedItem.style.transform = 'scale(1.03)';
+        setTimeout(() => {
+          addedItem.style.transform = '';
+        }, 300);
+      }
+      
+      const suggest = e.target.getAttribute && e.target.getAttribute('data-suggest');
+      if (suggest) {
+        handleUserMessage(suggest);
+      }
+    });
+
+    // Chat logic
+    const chatToggleBtn = document.getElementById('chat-toggle-btn');
+    const chatContainer = document.getElementById('chat-container');
+    const chatHeader = document.getElementById('chat-header');
+    const chatBody = document.getElementById('chat-body');
+    const chatInput = document.getElementById('chat-input');
+    const chatSend = document.getElementById('chat-send');
+
+    // Toggle chat visibility
+    chatToggleBtn.addEventListener('click', () => {
+      chatContainer.classList.toggle('active');
+    });
+
+    chatHeader.addEventListener('click', () => {
+      chatContainer.classList.remove('active');
+    });
+
+    function pushUser(text) {
+      const div = document.createElement('div');
+      div.className = 'message user';
+      div.innerHTML = `
+        <div class="message-content">${text}</div>
+      `;
+      chatBody.appendChild(div);
+      chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+    function pushBot(text) {
+      const div = document.createElement('div');
+      div.className = 'message bot';
+      div.innerHTML = `
+        <div class="message-content">${text}</div>
+      `;
+      chatBody.appendChild(div);
+      chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+    // История разговора для контекста
+    let conversationHistory = [];
+
+    async function handleUserMessage(text) {
+      pushUser(text);
+      
+      // Добавляем сообщение пользователя в историю
+      conversationHistory.push({
+        user: text,
+        bot: ''
+      });
+
+      try {
+        // Отправляем запрос к API
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            message: text,
+            history: conversationHistory.slice(0, -1) // Передаем историю без последнего сообщения
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const aiResponse = data.response;
+          
+          // Обновляем историю с ответом бота
+          conversationHistory[conversationHistory.length - 1].bot = aiResponse;
+          
+          pushBot(aiResponse);
+        } else {
+          throw new Error('API request failed');
+        }
+      } catch (error) {
+        console.error('Chat API error:', error);
+        // Fallback к простым ответам если API недоступен
+        const t = text.toLowerCase();
+        if (/ролл|роллы|суш/i.test(t)) {
+          pushBot('Рекомендую «Филадельфия» (490 ₽) и «Дракон» (620 ₽). Нажмите «Заказать» в карточке меню, я добавлю в корзину.');
+        } else if (/суп|том|мисо/i.test(t)) {
+          pushBot('У нас есть Мисо (190 ₽) и Том Ям (490 ₽). Могу подсказать по остроте.');
+        } else if (/лапша|удон|рамен|соба/i.test(t)) {
+          pushBot('Попробуйте Рамен (450 ₽), Удон с курицей (390 ₽) или Соба (380 ₽).');
+        } else if (/сет|набор/i.test(t)) {
+          pushBot('Сет «Самурай» — 30 шт. за 1390 ₽. Отлично для компании.');
+        } else if (/оформ|достав|адрес|тел/i.test(t)) {
+          pushBot('Отправьте телефон и адрес в формате: +7ХХХХХХХХХХ, Город, улица, дом. Я передам в систему.');
+        } else if (/спасибо|ок|да/i.test(t)) {
+          pushBot('Спасибо! Я на связи, подскажу по меню и акциям.');
+        } else {
+          pushBot('Понял. Могу порекомендовать популярные позиции или помочь с выбором по вкусу.');
+        }
+        
+        // Обновляем историю с fallback ответом
+        conversationHistory[conversationHistory.length - 1].bot = 'Fallback response';
+      }
+    }
+
+    chatSend.addEventListener('click', () => {
+      const v = chatInput.value.trim();
+      if (!v) return;
+      chatInput.value = '';
+      handleUserMessage(v);
+    });
+
+    chatInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        chatSend.click();
+      }
+    });
+
+    // Mobile menu toggle
+    const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const mobileMenuClose = document.getElementById('mobile-menu-close');
+
+    mobileMenuToggle.addEventListener('click', () => {
+      mobileMenu.classList.add('active');
+    });
+
+    mobileMenuClose.addEventListener('click', () => {
+      mobileMenu.classList.remove('active');
+    });
+
+    // Close mobile menu when clicking on links
+    document.querySelectorAll('.mobile-menu a').forEach(link => {
+      link.addEventListener('click', () => {
+        mobileMenu.classList.remove('active');
+      });
+    });
+
+    // Header scroll effect
+    const header = document.getElementById('main-header');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 50) {
+        header.classList.add('scrolled');
+      } else {
+        header.classList.remove('scrolled');
+      }
+    });
+
+    // Smooth scrolling for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function(e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          window.scrollTo({
+            top: target.offsetTop - 80,
+            behavior: 'smooth'
+          });
+        }
+      });
+    });
+
+    // Cart functionality
+    const cartToggleHeader = document.getElementById('cart-toggle-header');
+    const cartToggle = document.getElementById('cart-toggle');
+    const cartContainer = document.getElementById('cart-container');
+    const cartClose = document.getElementById('cart-close');
+    const cartOverlay = document.getElementById('cart-overlay');
+    const checkoutBtn = document.getElementById('checkout-btn');
+
+    function openCart() {
+      cartContainer.classList.add('active');
+      cartOverlay.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeCart() {
+      cartContainer.classList.remove('active');
+      cartOverlay.classList.remove('active');
+      document.body.style.overflow = 'auto';
+    }
+
+    cartToggleHeader.addEventListener('click', openCart);
+    cartToggle.addEventListener('click', openCart);
+    cartClose.addEventListener('click', closeCart);
+    cartOverlay.addEventListener('click', closeCart);
+
+    // Checkout form functionality
+    const checkoutForm = document.getElementById('checkout-form');
+    const cancelOrder = document.getElementById('cancel-order');
+    const orderForm = document.getElementById('order-form');
+
+    checkoutBtn.addEventListener('click', () => {
+      if (cart.length > 0) {
+        checkoutForm.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      } else {
+        pushBot("Ваша корзина пуста. Добавьте товары в корзину перед оформлением заказа.");
+      }
+    });
+
+    cancelOrder.addEventListener('click', () => {
+      checkoutForm.classList.remove('active');
+      document.body.style.overflow = 'auto';
+    });
+
+    orderForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      // Получаем данные формы
+      const formData = new FormData(orderForm);
+      const orderData = {
+        name: formData.get('customer-name'),
+        phone: formData.get('customer-phone'),
+        email: formData.get('customer-email'),
+        address: formData.get('delivery-address'),
+        delivery_time: formData.get('delivery-time'),
+        comment: formData.get('order-comment'),
+        payment_method: formData.get('payment-method'),
+        items: cart,
+        total: parseInt(document.getElementById('cart-total-price').textContent.replace(/[^0-9]/g, ''))
+      };
+      
+      try {
+        // Отправляем заказ на сервер
+        const response = await fetch('/api/order', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(orderData)
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          console.log('Заказ успешно создан:', result);
+          
+          // Показываем сообщение об успешном заказе
+          pushBot(`Спасибо, ${orderData.name}! Ваш заказ #${result.order_id} принят. Мы свяжемся с вами по телефону ${orderData.phone} для подтверждения.`);
+          
+          // Очищаем корзину
+          cart = [];
+          updateCart();
+          
+          // Закрываем форму и корзину
+          checkoutForm.classList.remove('active');
+          closeCart();
+          document.body.style.overflow = 'auto';
+        } else {
+          throw new Error('Failed to create order');
+        }
+      } catch (error) {
+        console.error('Order creation error:', error);
+        
+        // Fallback - показываем сообщение об ошибке
+        pushBot(`Извините, ${orderData.name}, произошла ошибка при оформлении заказа. Попробуйте позже или позвоните нам по телефону +7 (423) 200-12-34.`);
+        
+        // Очищаем корзину даже при ошибке
+        cart = [];
+        updateCart();
+        
+        // Закрываем форму и корзину
+        checkoutForm.classList.remove('active');
+        closeCart();
+        document.body.style.overflow = 'auto';
+      }
+    });
+
+    // Инициализация корзины
+    updateCart();
+  </script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - YANDEX_CLOUD_API_KEY=${YANDEX_CLOUD_API_KEY}
+      - YANDEX_CLOUD_FOLDER_ID=${YANDEX_CLOUD_FOLDER_ID}
+      - YANDEX_CLOUD_MODEL_ID=${YANDEX_CLOUD_MODEL_ID:-yandexgpt}
+      - FLASK_ENV=production
+      - PORT=5000
+    restart: unless-stopped
+    volumes:
+      - ./logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
