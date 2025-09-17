@@ -22,7 +22,7 @@ YANDEX_CLOUD_API_KEY = os.getenv('YANDEX_CLOUD_API_KEY', 'your-api-key-here')
 YANDEX_CLOUD_FOLDER_ID = os.getenv('YANDEX_CLOUD_FOLDER_ID', 'your-folder-id-here')
 YANDEX_CLOUD_MODEL_ID = os.getenv('YANDEX_CLOUD_MODEL_ID', 'yandexgpt')
 
-# URL для Yandex Cloud AI API (без лишних пробелов)
+# 🔧 ВАЖНО: убраны пробелы в конце URL!
 YANDEX_AI_URL = "https://llm.api.cloud.yandex.net/foundationModels/v1/completion"
 
 # === Контекст для AI модели ===
